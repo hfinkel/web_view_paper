@@ -1,21 +1,26 @@
 <pre class='metadata'>
 Title: web_view
 Shortname: P1108
-Revision: 0
+Revision: 1
 Audience: LEWG
 Status: P
 Group: WG21
-URL: http://wg21.link/p1108r0
+URL: http://wg21.link/p1108r1
 Editor: Hal Finkel, Argonne National Laboratory, hfinkel@anl.gov
 Abstract: This paper proposes a web_view facility for the C++ standard library. This facility enables modern, natural, multimodal user interaction by leveraging existing web standards and technologies.
-Date: 2018-06-22
+Date: 2018-10-08
 Markup Shorthands: markdown yes
 </pre>
+
+Change Log {#cl}
+===========
+
+ * r1: Added discussion of Qt. Added links to public discussion threads in the acknowledgments.
 
 Introduction {#intro}
 ===========
 
-After a long and interestingly-introspective graphics evening session in Rapperswil, we did not have consensus to move forward in the 2D graphics space. Nevertheless, this is an important area, and in this paper I propose taking a different approach from those previously discussed. In particular, I propose adding a web_view class to the standard library. I view this as taking the path represented by [[P1062R0]] to its logical conclusion. This represents, in my view, both the best approach, and the only practical approach, we can take to enable useful graphical user interaction in standard C++. In addition, graphics is not enough. We need to enable modern, natural, multimodal user interaction in order for a facility to be broadly useful for application development.
+After a long and interestingly-introspective graphics evening session in Rapperswil, we did not have consensus to move forward in the 2D graphics space. Nevertheless, this is an important area (and see sections 4 and 5 of [[P0939R0]]), wide interest remains, and in this paper I propose taking a different approach from those previously discussed. In particular, I propose adding a web_view class to the standard library. I view this as taking the path represented by [[P1062R0]] to its logical conclusion. This represents, in my view, both the best approach, and the only practical approach, we can take to enable useful graphical user interaction in standard C++. In addition, graphics is not enough. We need to enable modern, natural, multimodal user interaction in order for a facility to be broadly useful for application development.
 
 I believe that:
 
@@ -38,6 +43,12 @@ directly). An important question is whether this API surface could be small- and
   * [The Android WebView API](https://developer.android.com/reference/android/webkit/WebView)
 
 There are a number of concepts exposed in these APIs, including things like sandboxing parameters, which seem likely be too dynamic to reasonably standardize. We'd be relying on the library to provide "reasonable defaults" in many cases. That having been said, as with our Unicode support in standard C++, our API surface could increase over time. To be useful, we'll need to require support for a large number external standards (i.e., \[X]HTML, CSS, SVG, ECMAScript, and possibly others). Our three-year release cycle is likely sufficient to maintain a proper list of such standards, but it's still a large list, and to be clear, the transitive closure of this list is huge.
+
+Interacting with HTML, etc. is cumbersome in C++ without additional libraries (especially as presented in the example in this paper). I fully expect that, if we decide to go down this route, additional utilities and abstractions will be added to go along with it. Also, even with only the presented interface, I can certainly imagine constructing a program with mostly-static HTML input combined with some kind of reactive JavaScript library (e.g., [Vue.js](https://vuejs.org/)) that's reasonably clean (at least in the sense that it does not involve the gratuitous composition of markup text in C++, although it might involve use of JavaScript injection to update values).
+
+One natural questions that has been asked is: Why don't we just standardize Qt's API? Qt is not the only framework in this space, but it seems representative. From http://doc.qt.io/qt-5/classes.html, there are 1,594 classes in the Qt 5 API. From http://doc.qt.io/qt-5/functions.html, there are 12,984 functions. Dealing with such a large API seems impractical for our committee process, and frankly, this still seems impractical even if we were to strip this down significantly. Specifically, I don't really see the committee taking a hands-off approach to the content of the interface. Even if we could start with the text of Qt's documentation, we'd need to make sure that each class and function were specified in sufficient detail to allow for an independent (clean-room) implementation. I'm sure that suggestions would be made to change aspects of the interface to better expose capabilities of different vendors' underlying implementations, and future systems, and these would be discussed.
+
+It has been further suggested that I look at QML/QtQuick, instead of QtWidgets, as a point of comparison. However, it's not clear why standardizing something which looks like QML/QtQuick would be more useful than using web content. QML also uses JavaScript. Also, the discussion of "Quick Controls 1 vs. Quick Controls 2" (http://doc.qt.io/qt-5/qtquickcontrols2-differences.html) seems to be provide some non-trivial choices around desktop vs. mobile development. This could be a viable path for a standardization effort. It would, however, almost certainly invite design discussions around the API, the controls, etc. (because we can't hand that off to another standard, so we'd need to do that part ourselves), and we'd need a small-enough API surface for that to be practical.
 
 Proposed Interface {#proposal}
 ===========
@@ -257,5 +268,6 @@ On implementations where the web content is displayed in a window, this handler 
 Acknowledgments {#ack}
 =======
 
-I'd like to thank JF Bastien, Jeffrey Yasskin, Mike Spertus, Bryce Lelbach, Vinnie Falco, and Chandler Carruth for feedback and suggestions.
+I'd like to thank JF Bastien, Botond Ballo, Jeffrey Yasskin, Mike Spertus, Bryce Lelbach, Vinnie Falco, and Chandler Carruth for feedback and suggestions.
 
+Some public discussion is available on [reddit](https://www.reddit.com/r/cpp/comments/900dor/stdweb_view_proposal/). Also, see this thread on [Gecko's list](https://groups.google.com/forum/#!topic/mozilla.dev.platform/HGjLpdUaLsI).

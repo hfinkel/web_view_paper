@@ -2,7 +2,7 @@
  <head>
   <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
   <meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport">
-  <title>P1108R0: web_view</title>
+  <title>P1108R1: web_view</title>
 <style data-fill-with="stylesheet">/******************************************************************************
  *                   Style sheet for the W3C specifications                   *
  *
@@ -1227,9 +1227,9 @@ Possible extra rowspan handling
     }
   </style>
   <meta content="Bikeshed version 6abc9f98f620481a5031cd9b44944d60af9b79b9" name="generator">
-  <link href="http://wg21.link/p1108r0" rel="canonical">
+  <link href="http://wg21.link/p1108r1" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="67ebaaf28dd245bc449e8c4251f546b2622463e9" name="document-revision">
+  <meta content="f764d556687e3581419e15f2b4862e8f49229296" name="document-revision">
 <style>/* style-md-lists */
 
 /* This is a weird hack for me not yet following the commonmark spec
@@ -1438,12 +1438,12 @@ pre .property::before, pre .property::after {
  <body class="h-entry">
   <div class="head">
    <p data-fill-with="logo"></p>
-   <h1 class="p-name no-ref" id="title">P1108R0<br>web_view</h1>
-   <h2 class="no-num no-toc no-ref heading settled" id="subtitle"><span class="content">Published Proposal, <time class="dt-updated" datetime="2018-06-22">22 June 2018</time></span></h2>
+   <h1 class="p-name no-ref" id="title">P1108R1<br>web_view</h1>
+   <h2 class="no-num no-toc no-ref heading settled" id="subtitle"><span class="content">Published Proposal, <time class="dt-updated" datetime="2018-10-08">8 October 2018</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
      <dt>This version:
-     <dd><a class="u-url" href="http://wg21.link/p1108r0">http://wg21.link/p1108r0</a>
+     <dd><a class="u-url" href="http://wg21.link/p1108r1">http://wg21.link/p1108r1</a>
      <dt>Author:
      <dd>
       <dd class="editor p-author h-card vcard"><a class="p-name fn u-email email" href="mailto:hfinkel@anl.gov">Hal Finkel</a> (<span class="p-org org">Argonne National Laboratory</span>)
@@ -1463,11 +1463,12 @@ pre .property::before, pre .property::after {
   <nav data-fill-with="table-of-contents" id="toc">
    <h2 class="no-num no-toc no-ref" id="contents">Table of Contents</h2>
    <ol class="toc" role="directory">
-    <li><a href="#intro"><span class="secno">1</span> <span class="content">Introduction</span></a>
-    <li><a href="#proposal"><span class="secno">2</span> <span class="content">Proposed Interface</span></a>
-    <li><a href="#example"><span class="secno">3</span> <span class="content">An Example</span></a>
-    <li><a href="#word"><span class="secno">4</span> <span class="content">Very-Preliminary Wording</span></a>
-    <li><a href="#ack"><span class="secno">5</span> <span class="content">Acknowledgments</span></a>
+    <li><a href="#cl"><span class="secno">1</span> <span class="content">Change Log</span></a>
+    <li><a href="#intro"><span class="secno">2</span> <span class="content">Introduction</span></a>
+    <li><a href="#proposal"><span class="secno">3</span> <span class="content">Proposed Interface</span></a>
+    <li><a href="#example"><span class="secno">4</span> <span class="content">An Example</span></a>
+    <li><a href="#word"><span class="secno">5</span> <span class="content">Very-Preliminary Wording</span></a>
+    <li><a href="#ack"><span class="secno">6</span> <span class="content">Acknowledgments</span></a>
     <li>
      <a href="#references"><span class="secno"></span> <span class="content">References</span></a>
      <ol class="toc">
@@ -1476,8 +1477,13 @@ pre .property::before, pre .property::after {
    </ol>
   </nav>
   <main>
-   <h2 class="heading settled" data-level="1" id="intro"><span class="secno">1. </span><span class="content">Introduction</span><a class="self-link" href="#intro"></a></h2>
-   <p>After a long and interestingly-introspective graphics evening session in Rapperswil, we did not have consensus to move forward in the 2D graphics space. Nevertheless, this is an important area, and in this paper I propose taking a different approach from those previously discussed. In particular, I propose adding a web_view class to the standard library. I view this as taking the path represented by <a data-link-type="biblio" href="#biblio-p1062r0">[P1062R0]</a> to its logical conclusion. This represents, in my view, both the best approach, and the only practical approach, we can take to enable useful graphical user interaction in standard C++. In addition, graphics is not enough. We need to enable modern, natural, multimodal user interaction in order for a facility to be broadly useful for application development.</p>
+   <h2 class="heading settled" data-level="1" id="cl"><span class="secno">1. </span><span class="content">Change Log</span><a class="self-link" href="#cl"></a></h2>
+   <ul>
+    <li data-md="">
+     <p>r1: Added discussion of Qt. Added links to public discussion threads in the acknowledgments.</p>
+   </ul>
+   <h2 class="heading settled" data-level="2" id="intro"><span class="secno">2. </span><span class="content">Introduction</span><a class="self-link" href="#intro"></a></h2>
+   <p>After a long and interestingly-introspective graphics evening session in Rapperswil, we did not have consensus to move forward in the 2D graphics space. Nevertheless, this is an important area (and see sections 4 and 5 of <a data-link-type="biblio" href="#biblio-p0939r0">[P0939R0]</a>), wide interest remains, and in this paper I propose taking a different approach from those previously discussed. In particular, I propose adding a web_view class to the standard library. I view this as taking the path represented by <a data-link-type="biblio" href="#biblio-p1062r0">[P1062R0]</a> to its logical conclusion. This represents, in my view, both the best approach, and the only practical approach, we can take to enable useful graphical user interaction in standard C++. In addition, graphics is not enough. We need to enable modern, natural, multimodal user interaction in order for a facility to be broadly useful for application development.</p>
    <p>I believe that:</p>
    <ol>
     <li data-md="">
@@ -1502,7 +1508,10 @@ directly). An important question is whether this API surface could be small- and
      <p><a href="https://developer.android.com/reference/android/webkit/WebView">The Android WebView API</a></p>
    </ul>
    <p>There are a number of concepts exposed in these APIs, including things like sandboxing parameters, which seem likely be too dynamic to reasonably standardize. We’d be relying on the library to provide "reasonable defaults" in many cases. That having been said, as with our Unicode support in standard C++, our API surface could increase over time. To be useful, we’ll need to require support for a large number external standards (i.e., [X]HTML, CSS, SVG, ECMAScript, and possibly others). Our three-year release cycle is likely sufficient to maintain a proper list of such standards, but it’s still a large list, and to be clear, the transitive closure of this list is huge.</p>
-   <h2 class="heading settled" data-level="2" id="proposal"><span class="secno">2. </span><span class="content">Proposed Interface</span><a class="self-link" href="#proposal"></a></h2>
+   <p>Interacting with HTML, etc. is cumbersome in C++ without additional libraries (especially as presented in the example in this paper). I fully expect that, if we decide to go down this route, additional utilities and abstractions will be added to go along with it. Also, even with only the presented interface, I can certainly imagine constructing a program with mostly-static HTML input combined with some kind of reactive JavaScript library (e.g., <a href="https://vuejs.org/">Vue.js</a>) that’s reasonably clean (at least in the sense that it does not involve the gratuitous composition of markup text in C++, although it might involve use of JavaScript injection to update values).</p>
+   <p>One natural questions that has been asked is: Why don’t we just standardize Qt’s API? Qt is not the only framework in this space, but it seems representative. From http://doc.qt.io/qt-5/classes.html, there are 1,594 classes in the Qt 5 API. From http://doc.qt.io/qt-5/functions.html, there are 12,984 functions. Dealing with such a large API seems impractical for our committee process, and frankly, this still seems impractical even if we were to strip this down significantly. Specifically, I don’t really see the committee taking a hands-off approach to the content of the interface. Even if we could start with the text of Qt’s documentation, we’d need to make sure that each class and function were specified in sufficient detail to allow for an independent (clean-room) implementation. I’m sure that suggestions would be made to change aspects of the interface to better expose capabilities of different vendors' underlying implementations, and future systems, and these would be discussed.</p>
+   <p>It has been further suggested that I look at QML/QtQuick, instead of QtWidgets, as a point of comparison. However, it’s not clear why standardizing something which looks like QML/QtQuick would be more useful than using web content. QML also uses JavaScript. Also, the discussion of "Quick Controls 1 vs. Quick Controls 2" (http://doc.qt.io/qt-5/qtquickcontrols2-differences.html) seems to be provide some non-trivial choices around desktop vs. mobile development. This could be a viable path for a standardization effort. It would, however, almost certainly invite design discussions around the API, the controls, etc. (because we can’t hand that off to another standard, so we’d need to do that part ourselves), and we’d need a small-enough API surface for that to be practical.</p>
+   <h2 class="heading settled" data-level="3" id="proposal"><span class="secno">3. </span><span class="content">Proposed Interface</span><a class="self-link" href="#proposal"></a></h2>
 <pre class="highlight"><span class="k">namespace</span> <span class="n">std</span> <span class="p">{</span>
   <span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="n">T</span><span class="o">></span>
   <span class="n">concept</span> <span class="n">URISchemeHandler</span> <span class="o">=</span> <span class="n">requires</span><span class="p">(</span><span class="n">T</span> <span class="n">handler</span><span class="p">,</span> <span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="o">&amp;</span><span class="n">uri</span><span class="p">,</span> <span class="n">std</span><span class="o">::</span><span class="n">ostream</span> <span class="o">&amp;</span><span class="n">os</span><span class="p">)</span> <span class="p">{</span>
@@ -1534,7 +1543,7 @@ directly). An important question is whether this API surface could be small- and
    <p>It is important to note that the handlers, both the URI-scheme handler, and the close handler, must be allowed to run in a different thread from the thread that created the web_view object.</p>
    <p>Surveying the current implementations has convinced me that this kind of interface is appropriate for standardization, at least in the sense that, while broadly useful, using these services from a C++ application today requires difficult-to-get-right platform-specific code. Moving that burden to C++ library implementers, as a result, makes sense. In addition, it should be possible to create production applications using this facility that meet modern user expectations across many different kinds of devices and platforms.</p>
    <p>I don’t believe that we can require all C++ implementations, not even all non-freestanding C++ implementations, to provide a web-content interface. As a result, it must be legal for an implementation to stub out the implementation of web_view where it cannot be reasonably supported. Nevertheless, given currently-shipping web-browser implementations, we can provide a succinct API that ties C++ into the most-vibrant standards-driven ecosystem in this space.</p>
-   <h2 class="heading settled" data-level="3" id="example"><span class="secno">3. </span><span class="content">An Example</span><a class="self-link" href="#example"></a></h2>
+   <h2 class="heading settled" data-level="4" id="example"><span class="secno">4. </span><span class="content">An Example</span><a class="self-link" href="#example"></a></h2>
    <p>Here’s an example application which uses the proposed interface. It is the test in the prototype implementation repository, and while not the simplest possible application, it makes use of all of the parts of the proposed interfaces, and moreover, makes it clear that asynchronous programming may be unavoidable in this space.</p>
 <pre class="highlight"><span class="cp">#include</span> &lt;web_view><span class="cp"></span>
 <span class="cp"></span>
@@ -1587,7 +1596,7 @@ directly). An important question is whether this API surface could be small- and
   <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
 <span class="p">}</span>
 </pre>
-   <h2 class="heading settled" data-level="4" id="word"><span class="secno">4. </span><span class="content">Very-Preliminary Wording</span><a class="self-link" href="#word"></a></h2>
+   <h2 class="heading settled" data-level="5" id="word"><span class="secno">5. </span><span class="content">Very-Preliminary Wording</span><a class="self-link" href="#word"></a></h2>
    <p>Header <code class="highlight"><span class="o">&lt;</span><span class="n">web_view</span><span class="o">></span></code> synopsis [<strong>web_view.syn</strong>]:</p>
    <p>
     The header 
@@ -1661,8 +1670,9 @@ directly). An important question is whether this API surface could be small- and
    <p>[<em>Note:</em></p>
    <p>On implementations where the web content is displayed in a window, this handler should be called when the user, or other system activity, causes the window to be closed.</p>
    <p>-- <em>end note</em> ]</p>
-   <h2 class="heading settled" data-level="5" id="ack"><span class="secno">5. </span><span class="content">Acknowledgments</span><a class="self-link" href="#ack"></a></h2>
-   <p>I’d like to thank JF Bastien, Jeffrey Yasskin, Mike Spertus, Bryce Lelbach, Vinnie Falco, and Chandler Carruth for feedback and suggestions.</p>
+   <h2 class="heading settled" data-level="6" id="ack"><span class="secno">6. </span><span class="content">Acknowledgments</span><a class="self-link" href="#ack"></a></h2>
+   <p>I’d like to thank JF Bastien, Botond Ballo, Jeffrey Yasskin, Mike Spertus, Bryce Lelbach, Vinnie Falco, and Chandler Carruth for feedback and suggestions.</p>
+   <p>Some public discussion is available on <a href="https://www.reddit.com/r/cpp/comments/900dor/stdweb_view_proposal/">reddit</a>. Also, see this thread on <a href="https://groups.google.com/forum/#!topic/mozilla.dev.platform/HGjLpdUaLsI">Gecko’s list</a>.</p>
   </main>
 <script>
 (function() {
@@ -1878,6 +1888,8 @@ directly). An important question is whether this API surface could be small- and
    <dd>Zhiheng Wang. <a href="https://www.w3.org/TR/navigation-timing/">Navigation Timing</a>. 17 December 2012. REC. URL: <a href="https://www.w3.org/TR/navigation-timing/">https://www.w3.org/TR/navigation-timing/</a>
    <dt id="biblio-p0267r7">[P0267R7]
    <dd>Michael B. McLaughlin, Herb Sutter, Jason Zink, Guy Davidson. <a href="https://wg21.link/p0267r7">A Proposal to Add 2D Graphics Rendering and Display to C++</a>. 10 February 2018. URL: <a href="https://wg21.link/p0267r7">https://wg21.link/p0267r7</a>
+   <dt id="biblio-p0939r0">[P0939R0]
+   <dd>B. Dawes, H. Hinnant, B. Stroustrup, D. Vandevoorde, M. Wong. <a href="https://wg21.link/p0939r0">Direction for ISO C++</a>. 10 February 2018. URL: <a href="https://wg21.link/p0939r0">https://wg21.link/p0939r0</a>
    <dt id="biblio-p1062r0">[P1062R0]
    <dd>Bryce Adelstein Lelbach, Olivier Giroux, Zach Laine, Corentin Jabot, Vittorio Romeo. <a href="https://wg21.link/p1062r0">Diet Graphics</a>. 7 May 2018. URL: <a href="https://wg21.link/p1062r0">https://wg21.link/p1062r0</a>
    <dt id="biblio-page-visibility-2">[PAGE-VISIBILITY-2]
