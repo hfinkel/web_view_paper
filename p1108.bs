@@ -1,20 +1,21 @@
 <pre class='metadata'>
 Title: web_view
 Shortname: P1108
-Revision: 2
-Audience: SG13, SG18
+Revision: 3
+Audience: SG13, SG16, SG12, SG18
 Status: P
 Group: WG21
-URL: http://wg21.link/p1108r2
+URL: http://wg21.link/p1108r3
 Editor: Hal Finkel, Argonne National Laboratory, hfinkel@anl.gov
 Abstract: This paper proposes a web_view facility for the C++ standard library. This facility enables modern, natural, multimodal user interaction by leveraging existing web standards and technologies.
-Date: 2019-06-16
+Date: 2019-07-17
 Markup Shorthands: markdown yes
 </pre>
 
 Change Log {#cl}
 ===========
 
+ * r3: Based on the discussions in Cologne, many updates (added links to Mozilla API, use `<format>`, etc.)
  * r2: Based on the SG13 discussion in San Diego, added some comments on deployment options and process separation.
  * r1: Added discussion of Qt. Added links to public discussion threads in the acknowledgments.
 
@@ -42,6 +43,7 @@ directly). An important question is whether this API surface could be small- and
   * [The Internet Explorer IWebBrowser2 API](https://docs.microsoft.com/en-us/previous-versions/windows/internet-explorer/ie-developer/platform-apis/aa752127%28v%3dvs.85%29)
   * [The macOS/iOS WebKit API](https://developer.apple.com/documentation/webkit)
   * [The Android WebView API](https://developer.android.com/reference/android/webkit/WebView)
+  * [The Mozilla (Gecko) API](https://developer.mozilla.org/en-US/docs/Mozilla/Gecko/Embedding_Mozilla)
 
 There are a number of concepts exposed in these APIs, including things like sandboxing parameters, which seem likely be too dynamic to reasonably standardize. We'd be relying on the library to provide "reasonable defaults" in many cases. That having been said, as with our Unicode support in standard C++, our API surface could increase over time. To be useful, we'll need to require support for a large number external standards (i.e., \[X]HTML, CSS, SVG, ECMAScript, and possibly others). Our three-year release cycle is likely sufficient to maintain a proper list of such standards, but it's still a large list, and to be clear, the transitive closure of this list is huge.
 

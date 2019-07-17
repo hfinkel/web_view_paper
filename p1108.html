@@ -2,7 +2,7 @@
  <head>
   <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
   <meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport">
-  <title>P1108R2: web_view</title>
+  <title>P1108R3: web_view</title>
 <style data-fill-with="stylesheet">/******************************************************************************
  *                   Style sheet for the W3C specifications                   *
  *
@@ -1228,9 +1228,9 @@ Possible extra rowspan handling
     }
   </style>
   <meta content="Bikeshed version c03af8da7325f5ae3f9ca742161b5d270bbce12f" name="generator">
-  <link href="http://wg21.link/p1108r2" rel="canonical">
+  <link href="http://wg21.link/p1108r3" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="3134705b696c4a211961b9b53739e1f26e5b7a7c" name="document-revision">
+  <meta content="b2bfb6ad37e4ba6712f7dc9a04e412325838b2c6" name="document-revision">
 <style>/* style-md-lists */
 
 /* This is a weird hack for me not yet following the commonmark spec
@@ -1439,17 +1439,17 @@ pre .property::before, pre .property::after {
  <body class="h-entry">
   <div class="head">
    <p data-fill-with="logo"></p>
-   <h1 class="p-name no-ref" id="title">P1108R2<br>web_view</h1>
-   <h2 class="no-num no-toc no-ref heading settled" id="subtitle"><span class="content">Published Proposal, <time class="dt-updated" datetime="2019-06-16">2019-06-16</time></span></h2>
+   <h1 class="p-name no-ref" id="title">P1108R3<br>web_view</h1>
+   <h2 class="no-num no-toc no-ref heading settled" id="subtitle"><span class="content">Published Proposal, <time class="dt-updated" datetime="2019-07-17">2019-07-17</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
      <dt>This version:
-     <dd><a class="u-url" href="http://wg21.link/p1108r2">http://wg21.link/p1108r2</a>
+     <dd><a class="u-url" href="http://wg21.link/p1108r3">http://wg21.link/p1108r3</a>
      <dt>Author:
      <dd>
       <dd class="editor p-author h-card vcard"><a class="p-name fn u-email email" href="mailto:hfinkel@anl.gov">Hal Finkel</a> (<span class="p-org org">Argonne National Laboratory</span>)
      <dt>Audience:
-     <dd>SG13, SG18
+     <dd>SG13, SG16, SG12, SG18
      <dt>Project:
      <dd>ISO/IEC JTC1/SC22/WG21 14882: Programming Language — C++
     </dl>
@@ -1481,6 +1481,8 @@ pre .property::before, pre .property::after {
    <h2 class="heading settled" data-level="1" id="cl"><span class="secno">1. </span><span class="content">Change Log</span><a class="self-link" href="#cl"></a></h2>
    <ul>
     <li data-md>
+     <p>r3: Based on the discussions in Cologne, many updates (added links to Mozilla API, use <code class="highlight"><c- o>&lt;</c-><c- n>format</c-><c- o>></c-></code>, etc.)</p>
+    <li data-md>
      <p>r2: Based on the SG13 discussion in San Diego, added some comments on deployment options and process separation.</p>
     <li data-md>
      <p>r1: Added discussion of Qt. Added links to public discussion threads in the acknowledgments.</p>
@@ -1509,6 +1511,8 @@ directly). An important question is whether this API surface could be small- and
      <p><a href="https://developer.apple.com/documentation/webkit">The macOS/iOS WebKit API</a></p>
     <li data-md>
      <p><a href="https://developer.android.com/reference/android/webkit/WebView">The Android WebView API</a></p>
+    <li data-md>
+     <p><a href="https://developer.mozilla.org/en-US/docs/Mozilla/Gecko/Embedding_Mozilla">The Mozilla (Gecko) API</a></p>
    </ul>
    <p>There are a number of concepts exposed in these APIs, including things like sandboxing parameters, which seem likely be too dynamic to reasonably standardize. We’d be relying on the library to provide "reasonable defaults" in many cases. That having been said, as with our Unicode support in standard C++, our API surface could increase over time. To be useful, we’ll need to require support for a large number external standards (i.e., [X]HTML, CSS, SVG, ECMAScript, and possibly others). Our three-year release cycle is likely sufficient to maintain a proper list of such standards, but it’s still a large list, and to be clear, the transitive closure of this list is huge.</p>
    <p>Interacting with HTML, etc. is cumbersome in C++ without additional libraries (especially as presented in the example in this paper). I fully expect that, if we decide to go down this route, additional utilities and abstractions will be added to go along with it. Also, even with only the presented interface, I can certainly imagine constructing a program with mostly-static HTML input combined with some kind of reactive JavaScript library (e.g., <a href="https://vuejs.org/">Vue.js</a>) that’s reasonably clean (at least in the sense that it does not involve the gratuitous composition of markup text in C++, although it might involve use of JavaScript injection to update values).</p>
