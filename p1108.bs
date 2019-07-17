@@ -81,6 +81,11 @@ namespace std {
 
     template <typename CloseHandler>
     void set_close_handler(CloseHandler handler);
+
+    template <typename Rep, typename Period>
+    bool wait_for_close(const std::chrono::duration<Rep, Period>& rel_time);
+
+    void wait_for_close();
   };
 }
 
@@ -108,41 +113,34 @@ Here's an example application which uses the proposed interface. It is the test 
 
 #include <vector>
 #include <string>
-#include <thread>
 #include <chrono>
+#include <format>
 using namespace std::chrono_literals;
 
 int main(int argc, char *argv[]) {
   std::vector<std::string> args(argv, argv + argc);
 
-  std::mutex m;
-  std::condition_variable cv;
-  bool done = false;
-
   std::web_view w("web_view test app");
   w.set_uri_scheme_handler("wv", [&](const std::string &uri, std::ostream &os) {
     std::cout << "request: " << uri << "\n";
-    os << "<html><head><title>" << uri << "</title></head><body><p>" << uri << "</p><table>";
+    os << std::format("<html><head><title>{0}</title></head><body><p>{0}</p><table>\n", uri);
     for (auto &a : args)
-      os << "<tr><td>" << a << "</td></tr>" << "\n"; // we need some kind of "to_html" utility function.
+      os << std::format("<tr><td>{}</td></tr>\n", a); // we need some kind of "to_html" utility function.
     os << "</table>";
-    os << "<p><a href=\"" << uri << "/more.html" << "\">more</a></p>";
+    os << std::format("<p><a href=\"{}/more.html\">more</a></p>", uri);
     os << "<ul id='dl'></ul>";
     os << "</body></html>";
 
     return true;
   });
   w.set_close_handler([&]() {
-    std::unique_lock<std::mutex> ul(m);
-    done = true;
-    ul.unlock();
-    cv.notify_one(); });
+    std::cout << "close handler called\n";
+  });
 
   auto f = w.display_from_uri("wv://first.html");
   std::cout << "initial display complete: " << f.get() << "\n";
 
-  std::unique_lock<std::mutex> ul(m);
-  while (!cv.wait_for(ul, 2000ms, [&] { return done; })) {
+  while (!w.wait_for_close(2000ms)) {
     auto r = w.run_script("var node = document.createElement('li');"
                           "node.appendChild(document.createTextNode('Time has passed'));"
                           "document.getElementById('dl').appendChild(node); "
@@ -269,6 +267,27 @@ The implementation should handle this function as a top-level navigation request
 On implementations where the web content is displayed in a window, this handler should be called when the user, or other system activity, causes the window to be closed.
 
 -- *end note* ]
+
+<blockquote>
+<xmp>template <typename Rep, typename Period>
+    bool wait_for_close(const std::chrono::duration<Rep, Period>& rel_time);</xmp>
+</blockquote>
+
+*Effects*: Waits until the web content's interface becomes irrevocably unusable or the specified time interval has elapsed.
+
+*Returns*: `true` if web content's interface has become irrevocably unusable.
+
+*Throws*: Timeout-related exceptions (32.2.4).
+
+<blockquote>
+<xmp>void wait_for_close();</xmp>
+</blockquote>
+
+*Effects*: Waits until the web content's interface becomes irrevocably unusable.
+
+*Throws*: Timeout-related exceptions (32.2.4).
+
+Concurrent invocation of wait_for_close is allowed. If a close handler has been registered, and the web content's interface has become irrevocably unusable, the close handler shall complete execution prior to wait_for_close returning.
 
 Acknowledgments {#ack}
 =======

@@ -1230,7 +1230,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version c03af8da7325f5ae3f9ca742161b5d270bbce12f" name="generator">
   <link href="http://wg21.link/p1108r3" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="d22b9551abe2c6a25a3e1128b7a51ed5fe73dba5" name="document-revision">
+  <meta content="b27ede7fee99b4d3bb7e2abe2a2253c119b1c769" name="document-revision">
 <style>/* style-md-lists */
 
 /* This is a weird hack for me not yet following the commonmark spec
@@ -1542,6 +1542,11 @@ directly). An important question is whether this API surface could be small- and
 
     <c- k>template</c-> <c- o>&lt;</c-><c- k>typename</c-> <c- n>CloseHandler</c-><c- o>></c->
     <c- b>void</c-> <c- n>set_close_handler</c-><c- p>(</c-><c- n>CloseHandler</c-> <c- n>handler</c-><c- p>);</c->
+
+    <c- k>template</c-> <c- o>&lt;</c-><c- k>typename</c-> <c- n>Rep</c-><c- p>,</c-> <c- k>typename</c-> <c- n>Period</c-><c- o>></c->
+    <c- b>bool</c-> <c- n>wait_for_close</c-><c- p>(</c-><c- k>const</c-> <c- n>std</c-><c- o>::</c-><c- n>chrono</c-><c- o>::</c-><c- n>duration</c-><c- o>&lt;</c-><c- n>Rep</c-><c- p>,</c-> <c- n>Period</c-><c- o>>&amp;</c-> <c- n>rel_time</c-><c- p>);</c->
+
+    <c- b>void</c-> <c- nf>wait_for_close</c-><c- p>();</c->
   <c- p>};</c->
 <c- p>}</c->
 </pre>
@@ -1557,41 +1562,34 @@ directly). An important question is whether this API surface could be small- and
 
 <c- cp>#include</c-> &lt;vector>
 <c- cp>#include</c-> &lt;string>
-<c- cp>#include</c-> &lt;thread>
 <c- cp>#include</c-> &lt;chrono>
+<c- cp>#include</c-> &lt;format>
 <c- k>using</c-> <c- k>namespace</c-> <c- n>std</c-><c- o>::</c-><c- n>chrono_literals</c-><c- p>;</c->
 
 <c- b>int</c-> <c- nf>main</c-><c- p>(</c-><c- b>int</c-> <c- n>argc</c-><c- p>,</c-> <c- b>char</c-> <c- o>*</c-><c- n>argv</c-><c- p>[])</c-> <c- p>{</c->
   <c- n>std</c-><c- o>::</c-><c- n>vector</c-><c- o>&lt;</c-><c- n>std</c-><c- o>::</c-><c- n>string</c-><c- o>></c-> <c- n>args</c-><c- p>(</c-><c- n>argv</c-><c- p>,</c-> <c- n>argv</c-> <c- o>+</c-> <c- n>argc</c-><c- p>);</c->
 
-  <c- n>std</c-><c- o>::</c-><c- n>mutex</c-> <c- n>m</c-><c- p>;</c->
-  <c- n>std</c-><c- o>::</c-><c- n>condition_variable</c-> <c- n>cv</c-><c- p>;</c->
-  <c- b>bool</c-> <c- n>done</c-> <c- o>=</c-> false<c- p>;</c->
-
   <c- n>std</c-><c- o>::</c-><c- n>web_view</c-> <c- n>w</c-><c- p>(</c-><c- s>"web_view test app"</c-><c- p>);</c->
   <c- n>w</c-><c- p>.</c-><c- n>set_uri_scheme_handler</c-><c- p>(</c-><c- s>"wv"</c-><c- p>,</c-> <c- p>[</c-><c- o>&amp;</c-><c- p>](</c-><c- k>const</c-> <c- n>std</c-><c- o>::</c-><c- n>string</c-> <c- o>&amp;</c-><c- n>uri</c-><c- p>,</c-> <c- n>std</c-><c- o>::</c-><c- n>ostream</c-> <c- o>&amp;</c-><c- n>os</c-><c- p>)</c-> <c- p>{</c->
     <c- n>std</c-><c- o>::</c-><c- n>cout</c-> <c- o>&lt;&lt;</c-> <c- s>"request: "</c-> <c- o>&lt;&lt;</c-> <c- n>uri</c-> <c- o>&lt;&lt;</c-> <c- s>"</c-><c- se>\n</c-><c- s>"</c-><c- p>;</c->
-    <c- n>os</c-> <c- o>&lt;&lt;</c-> <c- s>"&lt;html>&lt;head>&lt;title>"</c-> <c- o>&lt;&lt;</c-> <c- n>uri</c-> <c- o>&lt;&lt;</c-> <c- s>"&lt;/title>&lt;/head>&lt;body>&lt;p>"</c-> <c- o>&lt;&lt;</c-> <c- n>uri</c-> <c- o>&lt;&lt;</c-> <c- s>"&lt;/p>&lt;table>"</c-><c- p>;</c->
+    <c- n>os</c-> <c- o>&lt;&lt;</c-> <c- n>std</c-><c- o>::</c-><c- n>format</c-><c- p>(</c-><c- s>"&lt;html>&lt;head>&lt;title>{0}&lt;/title>&lt;/head>&lt;body>&lt;p>{0}&lt;/p>&lt;table></c-><c- se>\n</c-><c- s>"</c-><c- p>,</c-> <c- n>uri</c-><c- p>);</c->
     <c- k>for</c-> <c- p>(</c-><c- k>auto</c-> <c- o>&amp;</c-><c- nl>a</c-> <c- p>:</c-> <c- n>args</c-><c- p>)</c->
-      <c- n>os</c-> <c- o>&lt;&lt;</c-> <c- s>"&lt;tr>&lt;td>"</c-> <c- o>&lt;&lt;</c-> <c- n>a</c-> <c- o>&lt;&lt;</c-> <c- s>"&lt;/td>&lt;/tr>"</c-> <c- o>&lt;&lt;</c-> <c- s>"</c-><c- se>\n</c-><c- s>"</c-><c- p>;</c-> <c- c1>// we need some kind of "to_html" utility function.</c->
+      <c- n>os</c-> <c- o>&lt;&lt;</c-> <c- n>std</c-><c- o>::</c-><c- n>format</c-><c- p>(</c-><c- s>"&lt;tr>&lt;td>{}&lt;/td>&lt;/tr></c-><c- se>\n</c-><c- s>"</c-><c- p>,</c-> <c- n>a</c-><c- p>);</c-> <c- c1>// we need some kind of "to_html" utility function.</c->
     <c- n>os</c-> <c- o>&lt;&lt;</c-> <c- s>"&lt;/table>"</c-><c- p>;</c->
-    <c- n>os</c-> <c- o>&lt;&lt;</c-> <c- s>"&lt;p>&lt;a href=</c-><c- se>\"</c-><c- s>"</c-> <c- o>&lt;&lt;</c-> <c- n>uri</c-> <c- o>&lt;&lt;</c-> <c- s>"/more.html"</c-> <c- o>&lt;&lt;</c-> <c- s>"</c-><c- se>\"</c-><c- s>>more&lt;/a>&lt;/p>"</c-><c- p>;</c->
+    <c- n>os</c-> <c- o>&lt;&lt;</c-> <c- n>std</c-><c- o>::</c-><c- n>format</c-><c- p>(</c-><c- s>"&lt;p>&lt;a href=</c-><c- se>\"</c-><c- s>{}/more.html</c-><c- se>\"</c-><c- s>>more&lt;/a>&lt;/p>"</c-><c- p>,</c-> <c- n>uri</c-><c- p>);</c->
     <c- n>os</c-> <c- o>&lt;&lt;</c-> <c- s>"&lt;ul id='dl'>&lt;/ul>"</c-><c- p>;</c->
     <c- n>os</c-> <c- o>&lt;&lt;</c-> <c- s>"&lt;/body>&lt;/html>"</c-><c- p>;</c->
 
     <c- k>return</c-> true<c- p>;</c->
   <c- p>});</c->
   <c- n>w</c-><c- p>.</c-><c- n>set_close_handler</c-><c- p>([</c-><c- o>&amp;</c-><c- p>]()</c-> <c- p>{</c->
-    <c- n>std</c-><c- o>::</c-><c- n>unique_lock</c-><c- o>&lt;</c-><c- n>std</c-><c- o>::</c-><c- n>mutex</c-><c- o>></c-> <c- n>ul</c-><c- p>(</c-><c- n>m</c-><c- p>);</c->
-    <c- n>done</c-> <c- o>=</c-> true<c- p>;</c->
-    <c- n>ul</c-><c- p>.</c-><c- n>unlock</c-><c- p>();</c->
-    <c- n>cv</c-><c- p>.</c-><c- n>notify_one</c-><c- p>();</c-> <c- p>});</c->
+    <c- n>std</c-><c- o>::</c-><c- n>cout</c-> <c- o>&lt;&lt;</c-> <c- s>"close handler called</c-><c- se>\n</c-><c- s>"</c-><c- p>;</c->
+  <c- p>});</c->
 
   <c- k>auto</c-> <c- n>f</c-> <c- o>=</c-> <c- n>w</c-><c- p>.</c-><c- n>display_from_uri</c-><c- p>(</c-><c- s>"wv://first.html"</c-><c- p>);</c->
   <c- n>std</c-><c- o>::</c-><c- n>cout</c-> <c- o>&lt;&lt;</c-> <c- s>"initial display complete: "</c-> <c- o>&lt;&lt;</c-> <c- n>f</c-><c- p>.</c-><c- n>get</c-><c- p>()</c-> <c- o>&lt;&lt;</c-> <c- s>"</c-><c- se>\n</c-><c- s>"</c-><c- p>;</c->
 
-  <c- n>std</c-><c- o>::</c-><c- n>unique_lock</c-><c- o>&lt;</c-><c- n>std</c-><c- o>::</c-><c- n>mutex</c-><c- o>></c-> <c- n>ul</c-><c- p>(</c-><c- n>m</c-><c- p>);</c->
-  <c- k>while</c-> <c- p>(</c-><c- o>!</c-><c- n>cv</c-><c- p>.</c-><c- n>wait_for</c-><c- p>(</c-><c- n>ul</c-><c- p>,</c-> <c- mi>2000</c-><c- n>ms</c-><c- p>,</c-> <c- p>[</c-><c- o>&amp;</c-><c- p>]</c-> <c- p>{</c-> <c- k>return</c-> <c- n>done</c-><c- p>;</c-> <c- p>}))</c-> <c- p>{</c->
+  <c- k>while</c-> <c- p>(</c-><c- o>!</c-><c- n>w</c-><c- p>.</c-><c- n>wait_for_close</c-><c- p>(</c-><c- mi>2000</c-><c- n>ms</c-><c- p>))</c-> <c- p>{</c->
     <c- k>auto</c-> <c- n>r</c-> <c- o>=</c-> <c- n>w</c-><c- p>.</c-><c- n>run_script</c-><c- p>(</c-><c- s>"var node = document.createElement('li');"</c->
                           <c- s>"node.appendChild(document.createTextNode('Time has passed'));"</c->
                           <c- s>"document.getElementById('dl').appendChild(node); "</c->
@@ -1678,6 +1676,18 @@ directly). An important question is whether this API surface could be small- and
    <p>[<em>Note:</em></p>
    <p>On implementations where the web content is displayed in a window, this handler should be called when the user, or other system activity, causes the window to be closed.</p>
    <p>-- <em>end note</em> ]</p>
+   <blockquote>
+<pre class="highlight"><c- k>template</c-> <c- o>&lt;</c-><c- k>typename</c-> <c- n>Rep</c-><c- p>,</c-> <c- k>typename</c-> <c- n>Period</c-><c- o>></c-><c- b>bool</c-> <c- n>wait_for_close</c-><c- p>(</c-><c- k>const</c-> <c- n>std</c-><c- o>::</c-><c- n>chrono</c-><c- o>::</c-><c- n>duration</c-><c- o>&lt;</c-><c- n>Rep</c-><c- p>,</c-> <c- n>Period</c-><c- o>>&amp;</c-> <c- n>rel_time</c-><c- p>);</c-></pre>
+   </blockquote>
+   <p><em>Effects</em>: Waits until the web content’s interface becomes irrevocably unusable or the specified time interval has elapsed.</p>
+   <p><em>Returns</em>: <code class="highlight">true</code> if web content’s interface has become irrevocably unusable.</p>
+   <p><em>Throws</em>: Timeout-related exceptions (32.2.4).</p>
+   <blockquote>
+<pre class="highlight"><c- b>void</c-> <c- nf>wait_for_close</c-><c- p>();</c-></pre>
+   </blockquote>
+   <p><em>Effects</em>: Waits until the web content’s interface becomes irrevocably unusable.</p>
+   <p><em>Throws</em>: Timeout-related exceptions (32.2.4).</p>
+   <p>Concurrent invocation of wait_for_close is allowed. If a close handler has been registered, and the web content’s interface has become irrevocably unusable, the close handler shall complete execution prior to wait_for_close returning.</p>
    <h2 class="heading settled" data-level="6" id="ack"><span class="secno">6. </span><span class="content">Acknowledgments</span><a class="self-link" href="#ack"></a></h2>
    <p>I’d like to thank JF Bastien, Botond Ballo, Jeffrey Yasskin, Mike Spertus, Bryce Lelbach, Vinnie Falco, and Chandler Carruth for feedback and suggestions.</p>
    <p>Some public discussion is available on <a href="https://www.reddit.com/r/cpp/comments/900dor/stdweb_view_proposal/">reddit</a>. Also, see this thread on <a href="https://groups.google.com/forum/#!topic/mozilla.dev.platform/HGjLpdUaLsI">Gecko’s list</a>.</p>
