@@ -1230,7 +1230,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version c03af8da7325f5ae3f9ca742161b5d270bbce12f" name="generator">
   <link href="http://wg21.link/p1108r3" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="b27ede7fee99b4d3bb7e2abe2a2253c119b1c769" name="document-revision">
+  <meta content="1ea78786d98ba1f7e8c3e48b4f9382f72100b234" name="document-revision">
 <style>/* style-md-lists */
 
 /* This is a weird hack for me not yet following the commonmark spec
@@ -1547,6 +1547,8 @@ directly). An important question is whether this API surface could be small- and
     <c- b>bool</c-> <c- n>wait_for_close</c-><c- p>(</c-><c- k>const</c-> <c- n>std</c-><c- o>::</c-><c- n>chrono</c-><c- o>::</c-><c- n>duration</c-><c- o>&lt;</c-><c- n>Rep</c-><c- p>,</c-> <c- n>Period</c-><c- o>>&amp;</c-> <c- n>rel_time</c-><c- p>);</c->
 
     <c- b>void</c-> <c- nf>wait_for_close</c-><c- p>();</c->
+
+    <c- b>void</c-> <c- nf>request_close</c-><c- p>();</c->
   <c- p>};</c->
 <c- p>}</c->
 </pre>
@@ -1688,6 +1690,10 @@ directly). An important question is whether this API surface could be small- and
    <p><em>Effects</em>: Waits until the web content’s interface becomes irrevocably unusable.</p>
    <p><em>Throws</em>: Timeout-related exceptions (32.2.4).</p>
    <p>Concurrent invocation of wait_for_close is allowed. If a close handler has been registered, and the web content’s interface has become irrevocably unusable, the close handler shall complete execution prior to wait_for_close returning.</p>
+   <blockquote>
+<pre class="highlight"><c- b>void</c-> <c- nf>request_close</c-><c- p>();</c-></pre>
+   </blockquote>
+   <p><em>Effects</em>: Requests, asynchronously, that the web content’s interface become irrevocably unusable.</p>
    <h2 class="heading settled" data-level="6" id="ack"><span class="secno">6. </span><span class="content">Acknowledgments</span><a class="self-link" href="#ack"></a></h2>
    <p>I’d like to thank JF Bastien, Botond Ballo, Jeffrey Yasskin, Mike Spertus, Bryce Lelbach, Vinnie Falco, and Chandler Carruth for feedback and suggestions.</p>
    <p>Some public discussion is available on <a href="https://www.reddit.com/r/cpp/comments/900dor/stdweb_view_proposal/">reddit</a>. Also, see this thread on <a href="https://groups.google.com/forum/#!topic/mozilla.dev.platform/HGjLpdUaLsI">Gecko’s list</a>.</p>

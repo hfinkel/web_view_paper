@@ -86,6 +86,8 @@ namespace std {
     bool wait_for_close(const std::chrono::duration<Rep, Period>& rel_time);
 
     void wait_for_close();
+
+    void request_close();
   };
 }
 
@@ -288,6 +290,12 @@ On implementations where the web content is displayed in a window, this handler 
 *Throws*: Timeout-related exceptions (32.2.4).
 
 Concurrent invocation of wait_for_close is allowed. If a close handler has been registered, and the web content's interface has become irrevocably unusable, the close handler shall complete execution prior to wait_for_close returning.
+
+<blockquote>
+<xmp>void request_close();</xmp>
+</blockquote>
+
+*Effects*: Requests, asynchronously, that the web content's interface become irrevocably unusable.
 
 Acknowledgments {#ack}
 =======
