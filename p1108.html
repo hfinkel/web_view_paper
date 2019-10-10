@@ -2,7 +2,7 @@
  <head>
   <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
   <meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport">
-  <title>P1108R3: web_view</title>
+  <title>P1108R4: web_view</title>
 <style data-fill-with="stylesheet">/******************************************************************************
  *                   Style sheet for the W3C specifications                   *
  *
@@ -1228,9 +1228,9 @@ Possible extra rowspan handling
     }
   </style>
   <meta content="Bikeshed version c03af8da7325f5ae3f9ca742161b5d270bbce12f" name="generator">
-  <link href="http://wg21.link/p1108r3" rel="canonical">
+  <link href="http://wg21.link/p1108r4" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="1ea78786d98ba1f7e8c3e48b4f9382f72100b234" name="document-revision">
+  <meta content="b516d3f07db02e3a22538aec3e1fa1d9f4bdb226" name="document-revision">
 <style>/* style-md-lists */
 
 /* This is a weird hack for me not yet following the commonmark spec
@@ -1439,12 +1439,12 @@ pre .property::before, pre .property::after {
  <body class="h-entry">
   <div class="head">
    <p data-fill-with="logo"></p>
-   <h1 class="p-name no-ref" id="title">P1108R3<br>web_view</h1>
-   <h2 class="no-num no-toc no-ref heading settled" id="subtitle"><span class="content">Published Proposal, <time class="dt-updated" datetime="2019-07-17">2019-07-17</time></span></h2>
+   <h1 class="p-name no-ref" id="title">P1108R4<br>web_view</h1>
+   <h2 class="no-num no-toc no-ref heading settled" id="subtitle"><span class="content">Published Proposal, <time class="dt-updated" datetime="2019-10-07">2019-10-07</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
      <dt>This version:
-     <dd><a class="u-url" href="http://wg21.link/p1108r3">http://wg21.link/p1108r3</a>
+     <dd><a class="u-url" href="http://wg21.link/p1108r4">http://wg21.link/p1108r4</a>
      <dt>Author:
      <dd>
       <dd class="editor p-author h-card vcard"><a class="p-name fn u-email email" href="mailto:hfinkel@anl.gov">Hal Finkel</a> (<span class="p-org org">Argonne National Laboratory</span>)
@@ -1466,10 +1466,24 @@ pre .property::before, pre .property::after {
    <ol class="toc" role="directory">
     <li><a href="#cl"><span class="secno">1</span> <span class="content">Change Log</span></a>
     <li><a href="#intro"><span class="secno">2</span> <span class="content">Introduction</span></a>
-    <li><a href="#proposal"><span class="secno">3</span> <span class="content">Proposed Interface</span></a>
-    <li><a href="#example"><span class="secno">4</span> <span class="content">An Example</span></a>
-    <li><a href="#word"><span class="secno">5</span> <span class="content">Very-Preliminary Wording</span></a>
-    <li><a href="#ack"><span class="secno">6</span> <span class="content">Acknowledgments</span></a>
+    <li><a href="#hist"><span class="secno">3</span> <span class="content">Some History and Graphics</span></a>
+    <li>
+     <a href="#faq"><span class="secno">4</span> <span class="content">FAQ</span></a>
+     <ol class="toc">
+      <li><a href="#q1"><span class="secno">4.1</span> <span class="content">What if we do nothing?</span></a>
+      <li><a href="#q2"><span class="secno">4.2</span> <span class="content">Is this API surface small- and long-lived enough to be useful?</span></a>
+      <li><a href="#q3"><span class="secno">4.3</span> <span class="content">Does this proposal require that standard-library implementations ship/maintain a web browser?</span></a>
+      <li><a href="#q6"><span class="secno">4.4</span> <span class="content">Why not standardize an HTTP-server library instead of this?</span></a>
+      <li><a href="#q7"><span class="secno">4.5</span> <span class="content">Should there be some integration with WebSockets?</span></a>
+      <li><a href="#q8"><span class="secno">4.6</span> <span class="content">Should there be some use of executors in this library?</span></a>
+      <li><a href="#q9"><span class="secno">4.7</span> <span class="content">What happens when the web_view object is destroyed?</span></a>
+      <li><a href="#q4"><span class="secno">4.8</span> <span class="content">Isn’t dealing with text (in HTML, JSON, URIs, etc.) ugly, verbose, difficult, error prone, or similar?</span></a>
+      <li><a href="#q5"><span class="secno">4.9</span> <span class="content">Why don’t we just standardize Qt’s API?</span></a>
+     </ol>
+    <li><a href="#proposal"><span class="secno">5</span> <span class="content">Proposed Interface</span></a>
+    <li><a href="#example"><span class="secno">6</span> <span class="content">An Example</span></a>
+    <li><a href="#word"><span class="secno">7</span> <span class="content">Very-Preliminary Wording</span></a>
+    <li><a href="#ack"><span class="secno">8</span> <span class="content">Acknowledgments</span></a>
     <li>
      <a href="#references"><span class="secno"></span> <span class="content">References</span></a>
      <ol class="toc">
@@ -1481,6 +1495,8 @@ pre .property::before, pre .property::after {
    <h2 class="heading settled" data-level="1" id="cl"><span class="secno">1. </span><span class="content">Change Log</span><a class="self-link" href="#cl"></a></h2>
    <ul>
     <li data-md>
+     <p>r4: Based on the feedback from Cologne, and afterward, significant updates: use u8string instead of string, set_uri_scheme_handler -> add_uri_scheme_handler, remove set_close_handler, run_script -> invoke,request_close -> close, wait changes, native-handle types, reduced standard list.</p>
+    <li data-md>
      <p>r3: Based on the discussions in Cologne, many updates (added links to Mozilla API, use <code class="highlight"><c- o>&lt;</c-><c- n>format</c-><c- o>></c-></code>, etc.)</p>
     <li data-md>
      <p>r2: Based on the SG13 discussion in San Diego, added some comments on deployment options and process separation.</p>
@@ -1488,6 +1504,13 @@ pre .property::before, pre .property::after {
      <p>r1: Added discussion of Qt. Added links to public discussion threads in the acknowledgments.</p>
    </ul>
    <h2 class="heading settled" data-level="2" id="intro"><span class="secno">2. </span><span class="content">Introduction</span><a class="self-link" href="#intro"></a></h2>
+   <p>Standard C++ should enable modern, natural, multimodal user interaction in order for a facility to be broadly useful for application development. Reality is that most users do not interact with applications using a command prompt (i.e., console I/O), but rather, use some graphical user interface. The C++ standard, however, provides no useful facilities in this regard, and as a result, users either need to make use of system-specific APIs, third-party libraries, or move to a different programming language. Moreover, these interactions require both input and output facilities, where output includes 2D graphics, 3D graphics, text rendering, dialog elements, and there are many forms of input devices (especially when accessibility-related technologies are considered). While I believe that the authors of <a data-link-type="biblio" href="#biblio-p0267r7">[P0267R7]</a>, and others, have made a commendable effort in the 2D-graphics area, down-scoping the problem to 2D graphics fails to address the underlying requirement of enabling user interaction through modern interfaces.</p>
+   <p>Unfortunately, this committee has neither the time nor the expertise to address this problem by directly creating some sufficiently-comprehensive API. Specifically, this is the problem
+addressed by web standards (i.e., HTML, CSS, SVG, and so on), those are in-turn built on many efforts in graphics (and many other areas), and clearly we cannot foster a comparable effort in this space in this
+committee. The only feasible way forward is to reach out to the large and vibrant community tackling this issue, creating portable standards in this space, and make direct use of their efforts.</p>
+   <p>Walking this path to its logical conclusion leads to an API providing a window into which a C++ program can inject web content (along with some callbacks to provide data, and possibly, handle some other events
+directly).</p>
+   <h2 class="heading settled" data-level="3" id="hist"><span class="secno">3. </span><span class="content">Some History and Graphics</span><a class="self-link" href="#hist"></a></h2>
    <p>After a long and interestingly-introspective graphics evening session in Rapperswil, we did not have consensus to move forward in the 2D graphics space. Nevertheless, this is an important area (and see sections 4 and 5 of <a data-link-type="biblio" href="#biblio-p0939r0">[P0939R0]</a>), wide interest remains, and in this paper I propose taking a different approach from those previously discussed. In particular, I propose adding a web_view class to the standard library. I view this as taking the path represented by <a data-link-type="biblio" href="#biblio-p1062r0">[P1062R0]</a> to its logical conclusion. This represents, in my view, both the best approach, and the only practical approach, we can take to enable useful graphical user interaction in standard C++. In addition, graphics is not enough. We need to enable modern, natural, multimodal user interaction in order for a facility to be broadly useful for application development.</p>
    <p>I believe that:</p>
    <ol>
@@ -1496,12 +1519,22 @@ pre .property::before, pre .property::after {
     <li data-md>
      <p>The underlying approach of <a data-link-type="biblio" href="#biblio-p1062r0">[P1062R0]</a>, by making use of outside standards (i.e., SVG), embraces the right philosophical approach to improving standard C++ in this regard.</p>
    </ol>
-   <p>Reality is that most users do not interact with applications using a command prompt (i.e., console I/O), but rather, use some graphical user interface. The C++ standard, however, provides no useful facilities in this regard, and as a result, users either need to make use of system-specific APIs, third-party libraries, or move to a different programming language. Moreover, these interactions require both input and output facilities, where output includes 2D graphics, 3D graphics, text rendering, dialog elements, and there are many forms of input devices (especially when accessibility-related technologies are considered). While I believe that the authors of <a data-link-type="biblio" href="#biblio-p0267r7">[P0267R7]</a>, and others, have made a commendable effort in the 2D-graphics area, down-scoping the problem to 2D graphics fails to address the underlying requirement of enabling user interaction through modern interfaces.</p>
-   <p>Unfortunately, this committee has neither the time nor the expertise to address this problem by directly creating some sufficiently-comprehensive API. Specifically, this is the problem
-addressed by web standards (i.e., HTML, CSS, SVG, and so on), those are in-turn built on many efforts in graphics (and many other areas), and clearly we cannot foster a comparable effort in this space in this
-committee. The only feasible way forward is to reach out to the large and vibrant community tackling this issue, creating portable standards in this space, and make direct use of their efforts.</p>
-   <p>Walking this path to its logical conclusion leads to an API providing a window into which a C++ program can inject web content (along with some callbacks to provide data, and possibly, handle some other events
-directly). An important question is whether this API surface could be small- and long-lived enough to be useful. To get some idea of what this space looks like, I recommend looking at:</p>
+   <p>This proposal was reviewed by SG13 is Cologne:</p>
+   <p>We encourage further work on this paper:</p>
+   <p>SF 	F 	N 	A 	SA
+3 	7 	5 	0 	0</p>
+   <p>And was reviewed in LEWGI:</p>
+   <p>We should promise more committee time to P1108 knowing that our time is scarce and this will leave less time for other work:</p>
+   <p>SF 	F 	N 	A 	SA
+4 	7 	5 	0 	1</p>
+   <p>This proposal has also been reviewed by SG12, SG1, and SG16.</p>
+   <h2 class="heading settled" data-level="4" id="faq"><span class="secno">4. </span><span class="content">FAQ</span><a class="self-link" href="#faq"></a></h2>
+   <h3 class="heading settled" data-level="4.1" id="q1"><span class="secno">4.1. </span><span class="content">What if we do nothing?</span><a class="self-link" href="#q1"></a></h3>
+   <p>If we do nothing then standard C++ will continue to lack a way to create applications with modern user interfaces.</p>
+   <p>That having been said, one can imagine a future in which WebAssembly standardizes some interface to the DOM (document object model) and other relevant state for WebAssembly applications running within a web-content engine, and most operating systems providing a way to launch WebAssembly applications within some otherwise-standalone web-content environment. In such a future, C++ applications, compiled to WebAssembly, might have a platform-specific, but portable, way to provide a modern user interface.</p>
+   <p>While there is a desire for WebAssembly to provide access to the DOM (and other web APIs), see <a href="https://webassembly.org/docs/future-features/">WebAssembly Future Features</a> and <a href="https://github.com/WebAssembly/proposals/issues/16">WebAssembly Proposal Issue 16</a>, and there already exist packages providing functionality along these lines (e.g., <a href="https://mbasso.github.io/asm-dom/">asm-dom</a>), it is unclear whether this will provide a sufficient solution for the C++ ecosystem at large. For one thing, WebAssembly applications may never truly match the performance of applications compiled directly for the underlying hardware. Such applications also might not be able to access necessary system services directly.</p>
+   <h3 class="heading settled" data-level="4.2" id="q2"><span class="secno">4.2. </span><span class="content">Is this API surface small- and long-lived enough to be useful?</span><a class="self-link" href="#q2"></a></h3>
+   <p>To get some idea of what this space looks like currently, I recommend looking at:</p>
    <ul>
     <li data-md>
      <p><a href="https://webkitgtk.org/reference/webkit2gtk/stable/">The WebKit (WebKitGTK+) API</a></p>
@@ -1515,50 +1548,74 @@ directly). An important question is whether this API surface could be small- and
      <p><a href="https://developer.mozilla.org/en-US/docs/Mozilla/Gecko/Embedding_Mozilla">The Mozilla (Gecko) API</a></p>
    </ul>
    <p>There are a number of concepts exposed in these APIs, including things like sandboxing parameters, which seem likely be too dynamic to reasonably standardize. We’d be relying on the library to provide "reasonable defaults" in many cases. That having been said, as with our Unicode support in standard C++, our API surface could increase over time. To be useful, we’ll need to require support for a large number external standards (i.e., [X]HTML, CSS, SVG, ECMAScript, and possibly others). Our three-year release cycle is likely sufficient to maintain a proper list of such standards, but it’s still a large list, and to be clear, the transitive closure of this list is huge.</p>
+   <p>Nevertheless, surveying the current implementations has convinced me that an interface along the lines of that proposed here is appropriate for standardization, at least in the sense that, while broadly useful, using these services from a C++ application today requires difficult-to-get-right platform-specific code. Moving that burden to C++ library implementers, as a result, makes sense. In addition, it should be possible to create production applications using this facility that meet modern user expectations across many different kinds of devices and platforms.</p>
+   <h3 class="heading settled" data-level="4.3" id="q3"><span class="secno">4.3. </span><span class="content">Does this proposal require that standard-library implementations ship/maintain a web browser?</span><a class="self-link" href="#q3"></a></h3>
+   <p>I think that it’s important that we think of this interface as one exposing underlying platform capabilities, not as one requiring an implementation shipped as part of the C++ standard library. Required security and functionality updates on many platforms for web-content support may be far more frequent than updates to the C++ standard library, and a web_view in the C++ standard library should automatically use this frequently-updated web-content software.</p>
+   <p>I don’t believe that we can require all C++ implementations, not even all non-freestanding C++ implementations, to provide a web-content interface. As a result, it must be legal for an implementation to stub out the implementation of web_view where it cannot be reasonably supported. Nevertheless, given currently-shipping web-browser implementations, we can provide a succinct API that ties C++ into the most-vibrant standards-driven ecosystem in this space.</p>
+   <h3 class="heading settled" data-level="4.4" id="q6"><span class="secno">4.4. </span><span class="content">Why not standardize an HTTP-server library instead of this?</span><a class="self-link" href="#q6"></a></h3>
+   <p>There are three reasons why standardizing an HTTP-server library might not address the same set of use cases as this proposal.</p>
+   <p>First, it does not address how to cause the web content to be displayed to the user. An external web browser might be launched and directed to some port on localhost opened by the application, but this might not provide the same look/behaviors as a native application (e.g., the name of the web browser might be visible, the localhost URL might be visible, there might not be a robust way to detect that the user closed the interface, it might appear to the user as through two applications are running, and so on). Some of these issues can be mitigated today using certain web browsers (e.g., using Chrome with the --app flag), but this usage mode for a web browser, which only addresses some of these concerns, is not universally supported today.</p>
+   <p>Second, it might not be possible to create a robust, secure, high-performance library without exposing protocol-level details on the interface, and doing that might create a library interface with too short of a useful lifetime. For one thing, the HTTP landscape is evolving relatively quickly: arguably, such a library should support HTTP/2 (SPDY), or even HTTP/3 (QUIC), and should certainly support WebSockets (<a data-link-type="biblio" href="#biblio-rfc6455">[rfc6455]</a>) (which is a layered on top of HTTP). TLS support seems like a necessary feature, which immediately implies exposing functionality related to certificate management and validation. Handling of content negotiation, cookies, and many other facets of the underlying protocol would likely need to be exposed as well. It might not be possible for us to standardize an interface here that exposes a sufficient amount of detail to constitute a high-quality implementation and yet remain useful over an extended period as the technology changes.</p>
+   <p>Third, providing an HTTP server is stepping away from the benefits of wrapping a system service, as this proposal does, and towards embedding a significant amount of functionality within the C++ standard library itself. From a implementation-complexity standpoint, and when considering the necessary upgrade times and timescales for responding to security issues, this looks much less appealing.</p>
+   <h3 class="heading settled" data-level="4.5" id="q7"><span class="secno">4.5. </span><span class="content">Should there be some integration with WebSockets?</span><a class="self-link" href="#q7"></a></h3>
+   <p>Once we have networking support, it might be possible to specify some kind of stream object that can be used other networking facilities, some way to generate such a stream, and some way to get the name of the stream for use in the web content. This seems like a reasonable extension to what is proposed here, and WebSockets are widely supported, although it does depart from the model of wrapping existing system services (as with the standardized HTTP-server question).</p>
+   <h3 class="heading settled" data-level="4.6" id="q8"><span class="secno">4.6. </span><span class="content">Should there be some use of executors in this library?</span><a class="self-link" href="#q8"></a></h3>
+   <p>Yes. Once we have executors, the interface proposed here should use them to specify where the URI-scheme handlers are run.</p>
+   <h3 class="heading settled" data-level="4.7" id="q9"><span class="secno">4.7. </span><span class="content">What happens when the web_view object is destroyed?</span><a class="self-link" href="#q9"></a></h3>
+   <p>In the current proposal, the destructor blocks until any callbacks have finished executing, and then it closes the window. This is expected to be the easiest-to-use behavior (and aims to avoid undefined behavior). There was an explicit vote in SG1 in Cologne on this aspect of the interface:</p>
+   <p>Destructing a web_view that is not closed (with an is_closed() member) should be UB</p>
+   <p>SF F N A SA</p>
+   <p>1 1 6 4 0</p>
+   <h3 class="heading settled" data-level="4.8" id="q4"><span class="secno">4.8. </span><span class="content">Isn’t dealing with text (in HTML, JSON, URIs, etc.) ugly, verbose, difficult, error prone, or similar?</span><a class="self-link" href="#q4"></a></h3>
    <p>Interacting with HTML, etc. is cumbersome in C++ without additional libraries (especially as presented in the example in this paper). I fully expect that, if we decide to go down this route, additional utilities and abstractions will be added to go along with it. Also, even with only the presented interface, I can certainly imagine constructing a program with mostly-static HTML input combined with some kind of reactive JavaScript library (e.g., <a href="https://vuejs.org/">Vue.js</a>) that’s reasonably clean (at least in the sense that it does not involve the gratuitous composition of markup text in C++, although it might involve use of JavaScript injection to update values).</p>
-   <p>One natural question that has been asked is: Why don’t we just standardize Qt’s API? Qt is not the only framework in this space, but it seems representative. From http://doc.qt.io/qt-5/classes.html, there are 1,594 classes in the Qt 5 API. From http://doc.qt.io/qt-5/functions.html, there are 12,984 functions. Dealing with such a large API seems impractical for our committee process, and frankly, this still seems impractical even if we were to strip this down significantly. Specifically, I don’t really see the committee taking a hands-off approach to the content of the interface. Even if we could start with the text of Qt’s documentation, we’d need to make sure that each class and function were specified in sufficient detail to allow for an independent (clean-room) implementation. I’m sure that suggestions would be made to change aspects of the interface to better expose capabilities of different vendors' underlying implementations, and future systems, and these would be discussed.</p>
+   <h3 class="heading settled" data-level="4.9" id="q5"><span class="secno">4.9. </span><span class="content">Why don’t we just standardize Qt’s API?</span><a class="self-link" href="#q5"></a></h3>
+   <p>Qt is not the only framework in this space, but it seems representative. From http://doc.qt.io/qt-5/classes.html, there are 1,594 classes in the Qt 5 API. From http://doc.qt.io/qt-5/functions.html, there are 12,984 functions. Dealing with such a large API seems impractical for our committee process, and frankly, this still seems impractical even if we were to strip this down significantly. Specifically, I don’t really see the committee taking a hands-off approach to the content of the interface. Even if we could start with the text of Qt’s documentation, we’d need to make sure that each class and function were specified in sufficient detail to allow for an independent (clean-room) implementation. I’m sure that suggestions would be made to change aspects of the interface to better expose capabilities of different vendors' underlying implementations, and future systems, and these would be discussed.</p>
    <p>It has been further suggested that I look at QML/QtQuick, instead of QtWidgets, as a point of comparison. However, it’s not clear why standardizing something which looks like QML/QtQuick would be more useful than using web content. QML also uses JavaScript. Also, the discussion of "Quick Controls 1 vs. Quick Controls 2" (http://doc.qt.io/qt-5/qtquickcontrols2-differences.html) seems to be provide some non-trivial choices around desktop vs. mobile development. This could be a viable path for a standardization effort. It would, however, almost certainly invite design discussions around the API, the controls, etc. (because we can’t hand that off to another standard, so we’d need to do that part ourselves), and we’d need a small-enough API surface for that to be practical.</p>
-   <h2 class="heading settled" data-level="3" id="proposal"><span class="secno">3. </span><span class="content">Proposed Interface</span><a class="self-link" href="#proposal"></a></h2>
+   <h2 class="heading settled" data-level="5" id="proposal"><span class="secno">5. </span><span class="content">Proposed Interface</span><a class="self-link" href="#proposal"></a></h2>
 <pre class="highlight"><c- k>namespace</c-> <c- n>std</c-> <c- p>{</c->
   <c- k>template</c-> <c- o>&lt;</c-><c- k>typename</c-> <c- n>T</c-><c- o>></c->
-  <c- n>concept</c-> <c- n>URISchemeHandler</c-> <c- o>=</c-> <c- n>requires</c-><c- p>(</c-><c- n>T</c-> <c- n>handler</c-><c- p>,</c-> <c- k>const</c-> <c- n>std</c-><c- o>::</c-><c- n>string</c-> <c- o>&amp;</c-><c- n>uri</c-><c- p>,</c-> <c- n>std</c-><c- o>::</c-><c- n>ostream</c-> <c- o>&amp;</c-><c- n>os</c-><c- p>)</c-> <c- p>{</c->
+  <c- n>concept</c-> <c- n>URISchemeHandler</c-> <c- o>=</c-> <c- n>requires</c-><c- p>(</c-><c- n>T</c-> <c- n>handler</c-><c- p>,</c-> <c- k>const</c-> <c- n>std</c-><c- o>::</c-><c- n>u8string</c-> <c- o>&amp;</c-><c- n>uri</c-><c- p>,</c-> <c- n>std</c-><c- o>::</c-><c- n>ostream</c-> <c- o>&amp;</c-><c- n>os</c-><c- p>)</c-> <c- p>{</c->
     <c- p>{</c-> <c- n>handler</c-><c- p>(</c-><c- n>uri</c-><c- p>,</c-> <c- n>os</c-><c- p>)</c-> <c- p>}</c-> <c- o>-></c-> <c- n>std</c-><c- o>::</c-><c- n>error_code</c-><c- p>;</c->
   <c- p>};</c->
 
-  <c- k>template</c-> <c- o>&lt;</c-><c- k>typename</c-> <c- n>T</c-><c- o>></c->
-  <c- n>concept</c-> <c- n>CloseHandler</c-> <c- o>=</c-> <c- n>requires</c-><c- p>(</c-><c- n>T</c-> <c- n>handler</c-><c- p>)</c-> <c- p>{</c->
-    <c- p>{</c-> <c- n>handler</c-><c- p>()</c-> <c- p>};</c->
-  <c- p>};</c->
-
   <c- k>struct</c-> <c- n>web_view</c-> <c- p>{</c->
-    <c- n>web_view</c-><c- p>(</c-><c- k>const</c-> <c- n>std</c-><c- o>::</c-><c- n>string</c-> <c- o>&amp;</c-><c- n>title</c-> <c- o>=</c-> <c- s>""</c-><c- p>);</c->
+    <c- k>using</c-> <c- n>native_handle_type</c-> <c- o>=</c-> <c- n>implementation</c-><c- o>-</c-><c- n>defined</c-><c- p>;</c-> <c- c1>// Defined as in 32.2.3.</c->
+    <c- k>using</c-> <c- n>native_options_type</c-> <c- o>=</c-> <c- n>implementation</c-><c- o>-</c-><c- n>defined</c-><c- p>;</c-> <c- c1>// Defined as in 32.2.3.</c->
 
-    <c- n>std</c-><c- o>::</c-><c- n>future</c-><c- o>&lt;</c-><c- n>std</c-><c- o>::</c-><c- n>error_code</c-><c- o>></c-> <c- n>display_from_uri</c-><c- p>(</c-><c- k>const</c-> <c- n>std</c-><c- o>::</c-><c- n>string</c-> <c- o>&amp;</c-><c- n>uri</c-><c- p>);</c->
+    <c- n>web_view</c-><c- p>(</c-><c- k>const</c-> <c- n>std</c-><c- o>::</c-><c- n>u8string</c-> <c- o>&amp;</c-><c- n>title</c-> <c- o>=</c-> <c- s>""</c-><c- p>);</c->
+    <c- n>web_view</c-><c- p>(</c-><c- k>const</c-> <c- n>native_options_type</c-> <c- o>&amp;</c-><c- n>options</c-><c- p>,</c-> <c- k>const</c-> <c- n>std</c-><c- o>::</c-><c- n>u8string</c-> <c- o>&amp;</c-><c- n>title</c-> <c- o>=</c-> <c- s>""</c-><c- p>);</c->
 
-    <c- n>std</c-><c- o>::</c-><c- n>future</c-><c- o>&lt;</c-><c- n>std</c-><c- o>::</c-><c- n>string</c-><c- o>></c-> <c- n>run_script</c-><c- p>(</c-><c- k>const</c-> <c- n>std</c-><c- o>::</c-><c- n>string</c-> <c- o>&amp;</c-><c- n>script</c-><c- p>);</c->
+    <c- b>void</c-> <c- nf>display_from_uri</c-><c- p>(</c-><c- k>const</c-> <c- n>std</c-><c- o>::</c-><c- n>u8string</c-> <c- o>&amp;</c-><c- n>uri</c-><c- p>);</c->
+
+    <c- k>template</c-> <c- o>&lt;</c-><c- k>typename</c-> <c- n>Ret</c-><c- p>,</c-> <c- k>typename</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
+    <c- n>std</c-><c- o>::</c-><c- n>future</c-><c- o>&lt;</c-><c- n>Ret</c-><c- o>></c-> <c- n>invoke</c-><c- p>(</c-><c- k>const</c-> <c- n>std</c-><c- o>::</c-><c- n>u8string</c-> <c- o>&amp;</c-><c- n>func_name</c-><c- p>,</c-> <c- n>Args</c-><c- o>&amp;&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
 
     <c- k>template</c-> <c- o>&lt;</c-><c- k>typename</c-> <c- n>URISchemeHandler</c-><c- o>></c->
-    <c- b>void</c-> <c- n>set_uri_scheme_handler</c-><c- p>(</c-><c- k>const</c-> <c- n>std</c-><c- o>::</c-><c- n>string</c-> <c- o>&amp;</c-><c- n>scheme</c-><c- p>,</c-> <c- n>URISchemeHandler</c-> <c- n>handler</c-><c- p>);</c->
+    <c- b>void</c-> <c- n>add_uri_scheme_handler</c-><c- p>(</c-><c- k>const</c-> <c- n>std</c-><c- o>::</c-><c- n>u8string</c-> <c- o>&amp;</c-><c- n>scheme</c-><c- p>,</c-> <c- n>URISchemeHandler</c-> <c- n>handler</c-><c- p>);</c->
 
-    <c- k>template</c-> <c- o>&lt;</c-><c- k>typename</c-> <c- n>CloseHandler</c-><c- o>></c->
-    <c- b>void</c-> <c- n>set_close_handler</c-><c- p>(</c-><c- n>CloseHandler</c-> <c- n>handler</c-><c- p>);</c->
+    <c- b>void</c-> <c- nf>wait</c-><c- p>(</c-><c- b>bool</c-> <c- n>closed</c-> <c- o>=</c-> true<c- p>);</c->
+    <c- b>void</c-> <c- nf>wait</c-><c- p>(</c-><c- n>std</c-><c- o>::</c-><c- n>error_code</c-> <c- o>&amp;</c-><c- n>last_errc</c-><c- p>,</c-> <c- b>bool</c-> <c- n>closed</c-> <c- o>=</c-> true<c- p>);</c->
 
     <c- k>template</c-> <c- o>&lt;</c-><c- k>typename</c-> <c- n>Rep</c-><c- p>,</c-> <c- k>typename</c-> <c- n>Period</c-><c- o>></c->
-    <c- b>bool</c-> <c- n>wait_for_close</c-><c- p>(</c-><c- k>const</c-> <c- n>std</c-><c- o>::</c-><c- n>chrono</c-><c- o>::</c-><c- n>duration</c-><c- o>&lt;</c-><c- n>Rep</c-><c- p>,</c-> <c- n>Period</c-><c- o>>&amp;</c-> <c- n>rel_time</c-><c- p>);</c->
+    <c- b>bool</c-> <c- n>wait_for</c-><c- p>(</c-><c- k>const</c-> <c- n>std</c-><c- o>::</c-><c- n>chrono</c-><c- o>::</c-><c- n>duration</c-><c- o>&lt;</c-><c- n>Rep</c-><c- p>,</c-> <c- n>Period</c-><c- o>>&amp;</c-> <c- n>rel_time</c-><c- p>,</c-> <c- b>bool</c-> <c- n>closed</c-> <c- o>=</c-> true<c- p>);</c->
+    <c- k>template</c-> <c- o>&lt;</c-><c- k>typename</c-> <c- n>Rep</c-><c- p>,</c-> <c- k>typename</c-> <c- n>Period</c-><c- o>></c->
+    <c- b>bool</c-> <c- n>wait_for</c-><c- p>(</c-><c- k>const</c-> <c- n>std</c-><c- o>::</c-><c- n>chrono</c-><c- o>::</c-><c- n>duration</c-><c- o>&lt;</c-><c- n>Rep</c-><c- p>,</c-> <c- n>Period</c-><c- o>>&amp;</c-> <c- n>rel_time</c-><c- p>,</c-> <c- n>std</c-><c- o>::</c-><c- n>error_code</c-> <c- o>&amp;</c-><c- n>last_errc</c-><c- p>,</c-> <c- b>bool</c-> <c- n>closed</c-> <c- o>=</c-> true<c- p>);</c->
 
-    <c- b>void</c-> <c- nf>wait_for_close</c-><c- p>();</c->
+    <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>Clock</c-><c- p>,</c-> <c- k>class</c-> <c- nc>Duration</c-><c- o>></c->
+    <c- b>bool</c-> <c- n>wait_until</c-><c- p>(</c-><c- k>const</c-> <c- n>chrono</c-><c- o>::</c-><c- n>time_point</c-><c- o>&lt;</c-><c- n>Clock</c-><c- p>,</c-> <c- n>Duration</c-><c- o>>&amp;</c-> <c- n>abs_time</c-><c- p>,</c-> <c- b>bool</c-> <c- n>closed</c-> <c- o>=</c-> true<c- p>);</c->
+    <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>Clock</c-><c- p>,</c-> <c- k>class</c-> <c- nc>Duration</c-><c- o>></c->
+    <c- b>bool</c-> <c- n>wait_until</c-><c- p>(</c-><c- k>const</c-> <c- n>chrono</c-><c- o>::</c-><c- n>time_point</c-><c- o>&lt;</c-><c- n>Clock</c-><c- p>,</c-> <c- n>Duration</c-><c- o>>&amp;</c-> <c- n>abs_time</c-><c- p>,</c-> <c- n>std</c-><c- o>::</c-><c- n>error_code</c-> <c- o>&amp;</c-><c- n>last_errc</c-><c- p>,</c-> <c- b>bool</c-> <c- n>closed</c-> <c- o>=</c-> true<c- p>);</c-> 
 
-    <c- b>void</c-> <c- nf>request_close</c-><c- p>();</c->
+    <c- b>void</c-> <c- nf>close</c-><c- p>();</c->
+
+    <c- n>native_handle_type</c-> <c- nf>native_handle</c-><c- p>();</c-> <c- c1>// Defined as in 32.2.3.</c->
   <c- p>};</c->
 <c- p>}</c->
 </pre>
    <p>An implementation of this interface is available from my github page: <a href="https://github.com/hfinkel/web_view">web_view</a>. This implementation uses the wxWidgets <a href="http://docs.wxwidgets.org/3.1.1/classwx_web_view.html">wxWebView</a> class which implemented in terms of the platform-native APIs listed above for IE (on Windows), WebKit (on macOS/iOS), and WebKitGTK+ (on Linux and other platforms). Qt also provides a <a href="https://doc.qt.io/qt-5.11/qtwebview-index.html">QtWebView</a>, but cannot currently fully support the proposed interface because it does not provide URI-scheme handlers. There are several others wrappers of these kinds that I found on github embedded inside of other projects (e.g., <a href="https://github.com/sreichholf/FireBreath/tree/master/src/libs/WebView">FireBreath</a>, <a href="https://github.com/caitp/TwitchSwitcher/blob/master/src/webview.cpp">TwitchSwitcher</a>, and <a href="https://github.com/sumatrapdfreader/sumatrapdf/blob/master/src/utils/HtmlWindow.cpp">SumatraPDF</a> (this one is IE-only, but see references therein for interesting details)).</p>
    <p>The proposed interface does not have a function to display a web page directly from a string (or similar). Such a facility could certainly be provided given the underlying interfaces provided by the browser APIs. However, if that page is going to contain links to further content that the application will provide, then a URI-scheme handler will be needed regardless. If the content is truly static and resides in a file, the a path to the file can be provided to the display_from_uri method. It should be noted that, as a limitation derived from current implementations, the URI scheme handlers provide a kind of virtual file-system interface, and as such, do not support POST data being provided to the handler along with the URI itself. To support that, and other protocols directly, we may need to provide an actual socket-based server to which the web_view could connect.</p>
    <p>It is important to note that the handlers, both the URI-scheme handler, and the close handler, likely must be allowed to run in a different thread from the thread that created the web_view object. For security and other reasons, many implementations will separate the web-content rendering and script execution into a separate process. The web_view interface must allow for this, and in practice, this implies that the interface should avoid fine-grained interaction between the C++ application and the web content (as, in many implementations, all such interactions are mediated by remote procedure calls (RPC), and such calls are relatively expensive). Specifically, traversing and altering the DOM (document object model) of the content of the web_view from the C++ application, even if supported by the underlying platform APIs, would not only require a larger API surface, but would likely also be an expensive API to use.</p>
-   <p>Surveying the current implementations has convinced me that this kind of interface is appropriate for standardization, at least in the sense that, while broadly useful, using these services from a C++ application today requires difficult-to-get-right platform-specific code. Moving that burden to C++ library implementers, as a result, makes sense. In addition, it should be possible to create production applications using this facility that meet modern user expectations across many different kinds of devices and platforms.</p>
-   <p>I think that it’s important that we think of this interface as one exposing underlying platform capabilities, not as one requiring an implementation shipped as part of the C++ standard library. Required security and functionality updates on many platforms for web-content support may be far more frequent than updates to the C++ standard library, and a web_view in the C++ standard library should automatically use this frequently-updated web-content software.</p>
-   <p>I don’t believe that we can require all C++ implementations, not even all non-freestanding C++ implementations, to provide a web-content interface. As a result, it must be legal for an implementation to stub out the implementation of web_view where it cannot be reasonably supported. Nevertheless, given currently-shipping web-browser implementations, we can provide a succinct API that ties C++ into the most-vibrant standards-driven ecosystem in this space.</p>
-   <h2 class="heading settled" data-level="4" id="example"><span class="secno">4. </span><span class="content">An Example</span><a class="self-link" href="#example"></a></h2>
+   <h2 class="heading settled" data-level="6" id="example"><span class="secno">6. </span><span class="content">An Example</span><a class="self-link" href="#example"></a></h2>
    <p>Here’s an example application which uses the proposed interface. It is the test in the prototype implementation repository, and while not the simplest possible application, it makes use of all of the parts of the proposed interfaces, and moreover, makes it clear that asynchronous programming may be unavoidable in this space.</p>
 <pre class="highlight"><c- cp>#include</c-> &lt;web_view>
 
@@ -1572,9 +1629,16 @@ directly). An important question is whether this API surface could be small- and
   <c- n>std</c-><c- o>::</c-><c- n>vector</c-><c- o>&lt;</c-><c- n>std</c-><c- o>::</c-><c- n>string</c-><c- o>></c-> <c- n>args</c-><c- p>(</c-><c- n>argv</c-><c- p>,</c-> <c- n>argv</c-> <c- o>+</c-> <c- n>argc</c-><c- p>);</c->
 
   <c- n>std</c-><c- o>::</c-><c- n>web_view</c-> <c- n>w</c-><c- p>(</c-><c- s>"web_view test app"</c-><c- p>);</c->
-  <c- n>w</c-><c- p>.</c-><c- n>set_uri_scheme_handler</c-><c- p>(</c-><c- s>"wv"</c-><c- p>,</c-> <c- p>[</c-><c- o>&amp;</c-><c- p>](</c-><c- k>const</c-> <c- n>std</c-><c- o>::</c-><c- n>string</c-> <c- o>&amp;</c-><c- n>uri</c-><c- p>,</c-> <c- n>std</c-><c- o>::</c-><c- n>ostream</c-> <c- o>&amp;</c-><c- n>os</c-><c- p>)</c-> <c- p>{</c->
+  <c- n>w</c-><c- p>.</c-><c- n>add_uri_scheme_handler</c-><c- p>(</c-><c- s>"wv"</c-><c- p>,</c-> <c- p>[</c-><c- o>&amp;</c-><c- p>](</c-><c- k>const</c-> <c- n>std</c-><c- o>::</c-><c- n>u8string</c-> <c- o>&amp;</c-><c- n>uri</c-><c- p>,</c-> <c- n>std</c-><c- o>::</c-><c- n>ostream</c-> <c- o>&amp;</c-><c- n>os</c-><c- p>)</c-> <c- p>{</c->
     <c- n>std</c-><c- o>::</c-><c- n>cout</c-> <c- o>&lt;&lt;</c-> <c- s>"request: "</c-> <c- o>&lt;&lt;</c-> <c- n>uri</c-> <c- o>&lt;&lt;</c-> <c- s>"</c-><c- se>\n</c-><c- s>"</c-><c- p>;</c->
-    <c- n>os</c-> <c- o>&lt;&lt;</c-> <c- n>std</c-><c- o>::</c-><c- n>format</c-><c- p>(</c-><c- s>"&lt;html>&lt;head>&lt;title>{0}&lt;/title>&lt;/head>&lt;body>&lt;p>{0}&lt;/p>&lt;table></c-><c- se>\n</c-><c- s>"</c-><c- p>,</c-> <c- n>uri</c-><c- p>);</c->
+    <c- n>os</c-> <c- o>&lt;&lt;</c-> <c- n>std</c-><c- o>::</c-><c- n>format</c-><c- p>(</c-><c- s>"&lt;html>&lt;head>&lt;title>{0}&lt;/title>&lt;script>"</c->
+                      <c- s>"function newitem() {"</c->
+                        <c- s>"var node = document.createElement('li');"</c->
+                        <c- s>"node.appendChild(document.createTextNode('Time has passed'));"</c->
+                        <c- s>"document.getElementById('dl').appendChild(node); "</c->
+                        <c- s>"var d = new Date(); d.getTime();"</c->
+                      <c- s>"}"</c->
+                      <c- s>"&lt;/script>&lt;/head>&lt;body>&lt;p>{0}&lt;/p>&lt;table></c-><c- se>\n</c-><c- s>"</c-><c- p>,</c-> <c- n>uri</c-><c- p>);</c->
     <c- k>for</c-> <c- p>(</c-><c- k>auto</c-> <c- o>&amp;</c-><c- nl>a</c-> <c- p>:</c-> <c- n>args</c-><c- p>)</c->
       <c- n>os</c-> <c- o>&lt;&lt;</c-> <c- n>std</c-><c- o>::</c-><c- n>format</c-><c- p>(</c-><c- s>"&lt;tr>&lt;td>{}&lt;/td>&lt;/tr></c-><c- se>\n</c-><c- s>"</c-><c- p>,</c-> <c- n>a</c-><c- p>);</c-> <c- c1>// we need some kind of "to_html" utility function.</c->
     <c- n>os</c-> <c- o>&lt;&lt;</c-> <c- s>"&lt;/table>"</c-><c- p>;</c->
@@ -1584,18 +1648,15 @@ directly). An important question is whether this API surface could be small- and
 
     <c- k>return</c-> true<c- p>;</c->
   <c- p>});</c->
-  <c- n>w</c-><c- p>.</c-><c- n>set_close_handler</c-><c- p>([</c-><c- o>&amp;</c-><c- p>]()</c-> <c- p>{</c->
-    <c- n>std</c-><c- o>::</c-><c- n>cout</c-> <c- o>&lt;&lt;</c-> <c- s>"close handler called</c-><c- se>\n</c-><c- s>"</c-><c- p>;</c->
-  <c- p>});</c->
 
-  <c- k>auto</c-> <c- n>f</c-> <c- o>=</c-> <c- n>w</c-><c- p>.</c-><c- n>display_from_uri</c-><c- p>(</c-><c- s>"wv://first.html"</c-><c- p>);</c->
-  <c- n>std</c-><c- o>::</c-><c- n>cout</c-> <c- o>&lt;&lt;</c-> <c- s>"initial display complete: "</c-> <c- o>&lt;&lt;</c-> <c- n>f</c-><c- p>.</c-><c- n>get</c-><c- p>()</c-> <c- o>&lt;&lt;</c-> <c- s>"</c-><c- se>\n</c-><c- s>"</c-><c- p>;</c->
+  <c- n>w</c-><c- p>.</c-><c- n>display_from_uri</c-><c- p>(</c-><c- s>"wv://first.html"</c-><c- p>);</c->
 
-  <c- k>while</c-> <c- p>(</c-><c- o>!</c-><c- n>w</c-><c- p>.</c-><c- n>wait_for_close</c-><c- p>(</c-><c- mi>2000</c-><c- n>ms</c-><c- p>))</c-> <c- p>{</c->
-    <c- k>auto</c-> <c- n>r</c-> <c- o>=</c-> <c- n>w</c-><c- p>.</c-><c- n>run_script</c-><c- p>(</c-><c- s>"var node = document.createElement('li');"</c->
-                          <c- s>"node.appendChild(document.createTextNode('Time has passed'));"</c->
-                          <c- s>"document.getElementById('dl').appendChild(node); "</c->
-                          <c- s>"var d = new Date(); d.getTime();"</c-><c- p>);</c->
+  <c- n>std</c-><c- o>::</c-><c- n>error_code</c-> <c- n>e</c-><c- p>;</c->
+  <c- n>w</c-><c- p>.</c-><c- n>wait</c-><c- p>(</c->false<c- p>,</c-> <c- n>e</c-><c- p>);</c->
+  <c- n>std</c-><c- o>::</c-><c- n>cout</c-> <c- o>&lt;&lt;</c-> <c- s>"initial display complete: "</c-> <c- o>&lt;&lt;</c-> <c- n>e</c-> <c- o>&lt;&lt;</c-> <c- s>"</c-><c- se>\n</c-><c- s>"</c-><c- p>;</c->
+
+  <c- k>while</c-> <c- p>(</c-><c- o>!</c-><c- n>w</c-><c- p>.</c-><c- n>wait_for</c-><c- p>(</c-><c- mi>2000</c-><c- n>ms</c-><c- p>))</c-> <c- p>{</c->
+    <c- k>auto</c-> <c- n>r</c-> <c- o>=</c-> <c- n>w</c-><c- p>.</c-><c- n>invoke</c-><c- o>&lt;</c-><c- b>double</c-><c- o>></c-><c- p>(</c-><c- s>"newitem"</c-><c- p>);</c->
     <c- n>std</c-><c- o>::</c-><c- n>cout</c-> <c- o>&lt;&lt;</c-> <c- s>"got from script: "</c-> <c- o>&lt;&lt;</c-> <c- n>r</c-><c- p>.</c-><c- n>get</c-><c- p>()</c-> <c- o>&lt;&lt;</c-> <c- s>"</c-><c- se>\n</c-><c- s>"</c-><c- p>;</c->
   <c- p>}</c->
 
@@ -1604,7 +1665,7 @@ directly). An important question is whether this API surface could be small- and
   <c- k>return</c-> <c- mi>0</c-><c- p>;</c->
 <c- p>}</c->
 </pre>
-   <h2 class="heading settled" data-level="5" id="word"><span class="secno">5. </span><span class="content">Very-Preliminary Wording</span><a class="self-link" href="#word"></a></h2>
+   <h2 class="heading settled" data-level="7" id="word"><span class="secno">7. </span><span class="content">Very-Preliminary Wording</span><a class="self-link" href="#word"></a></h2>
    <p>Header <code class="highlight"><c- o>&lt;</c-><c- n>web_view</c-><c- o>></c-></code> synopsis [<strong>web_view.syn</strong>]:</p>
    <p>
     The header 
@@ -1613,13 +1674,8 @@ directly). An important question is whether this API surface could be small- and
    <blockquote>
 <pre class="highlight"><c- k>namespace</c-> <c- n>std</c-> <c- p>{</c->
   <c- k>template</c-> <c- o>&lt;</c-><c- k>typename</c-> <c- n>T</c-><c- o>></c->
-  <c- n>concept</c-> <c- n>URISchemeHandler</c-> <c- o>=</c-> <c- n>requires</c-><c- p>(</c-><c- n>T</c-> <c- n>handler</c-><c- p>,</c-> <c- k>const</c-> <c- n>std</c-><c- o>::</c-><c- n>string</c-> <c- o>&amp;</c-><c- n>uri</c-><c- p>,</c-> <c- n>std</c-><c- o>::</c-><c- n>ostream</c-> <c- o>&amp;</c-><c- n>os</c-><c- p>)</c-> <c- p>{</c->
+  <c- n>concept</c-> <c- n>URISchemeHandler</c-> <c- o>=</c-> <c- n>requires</c-><c- p>(</c-><c- n>T</c-> <c- n>handler</c-><c- p>,</c-> <c- k>const</c-> <c- n>std</c-><c- o>::</c-><c- n>u8string</c-> <c- o>&amp;</c-><c- n>uri</c-><c- p>,</c-> <c- n>std</c-><c- o>::</c-><c- n>ostream</c-> <c- o>&amp;</c-><c- n>os</c-><c- p>)</c-> <c- p>{</c->
     <c- p>{</c-> <c- n>handler</c-><c- p>(</c-><c- n>uri</c-><c- p>,</c-> <c- n>os</c-><c- p>)</c-> <c- p>}</c-> <c- o>-></c-> <c- n>std</c-><c- o>::</c-><c- n>error_code</c-><c- p>;</c->
-  <c- p>};</c->
-
-  <c- k>template</c-> <c- o>&lt;</c-><c- k>typename</c-> <c- n>T</c-><c- o>></c->
-  <c- n>concept</c-> <c- n>CloseHandler</c-> <c- o>=</c-> <c- n>requires</c-><c- p>(</c-><c- n>T</c-> <c- n>handler</c-><c- p>)</c-> <c- p>{</c->
-    <c- p>{</c-> <c- n>handler</c-><c- p>()</c-> <c- p>};</c->
   <c- p>};</c->
 
   <c- k>class</c-> <c- nc>web_view</c-><c- p>;</c->
@@ -1629,33 +1685,27 @@ directly). An important question is whether this API surface could be small- and
    <p>class web_view [<strong>web_view</strong>]</p>
    <blockquote>
 <pre class="highlight"><c- k>class</c-> <c- nc>web_view</c-> <c- p>{</c->
-  <c- n>web_view</c-><c- p>(</c-><c- k>const</c-> <c- n>std</c-><c- o>::</c-><c- n>string</c-> <c- o>&amp;</c-><c- n>title</c-> <c- o>=</c-> <c- s>""</c-><c- p>);</c->
-
-  <c- n>std</c-><c- o>::</c-><c- n>future</c-><c- o>&lt;</c-><c- n>std</c-><c- o>::</c-><c- n>error_code</c-><c- o>></c-> <c- n>display_from_uri</c-><c- p>(</c-><c- k>const</c-> <c- n>std</c-><c- o>::</c-><c- n>string</c-> <c- o>&amp;</c-><c- n>uri</c-><c- p>);</c->
-  <c- n>std</c-><c- o>::</c-><c- n>future</c-><c- o>&lt;</c-><c- n>std</c-><c- o>::</c-><c- n>string</c-><c- o>></c-> <c- n>run_script</c-><c- p>(</c-><c- k>const</c-> <c- n>std</c-><c- o>::</c-><c- n>string</c-> <c- o>&amp;</c-><c- n>script</c-><c- p>);</c->
-
-  <c- k>template</c-> <c- o>&lt;</c-><c- k>typename</c-> <c- n>URISchemeHandler</c-><c- o>></c->
-  <c- b>void</c-> <c- n>set_uri_scheme_handler</c-><c- p>(</c-><c- k>const</c-> <c- n>std</c-><c- o>::</c-><c- n>string</c-> <c- o>&amp;</c-><c- n>scheme</c-><c- p>,</c-> <c- n>URISchemeHandler</c-> <c- n>handler</c-><c- p>);</c->
-
-  <c- k>template</c-> <c- o>&lt;</c-><c- k>typename</c-> <c- n>CloseHandler</c-><c- o>></c->
-  <c- b>void</c-> <c- n>set_close_handler</c-><c- p>(</c-><c- n>CloseHandler</c-> <c- n>handler</c-><c- p>);</c->
+  <c- p>...</c-> <c- c1>// see above</c->
 <c- p>};</c->
 </pre>
    </blockquote>
-   <p>Each web_view class instance represents an independent, asynchronous web-content interface. The provided web_view shall support content complying with the <a data-link-type="biblio" href="#biblio-html5">[HTML5]</a>, <a data-link-type="biblio" href="#biblio-2dcontext">[2dcontext]</a>, <a data-link-type="biblio" href="#biblio-webgl">[WebGL]</a>, <a data-link-type="biblio" href="#biblio-css3-ui">[CSS3-UI]</a>, <a data-link-type="biblio" href="#biblio-css-cascade-3">[css-cascade-3]</a>, <a data-link-type="biblio" href="#biblio-css-grid-1">[css-grid-1]</a>, <a data-link-type="biblio" href="#biblio-css-scroll-snap-1">[css-scroll-snap-1]</a>, <a data-link-type="biblio" href="#biblio-css3-images">[css3-images]</a>, <a data-link-type="biblio" href="#biblio-css3-background">[css3-background]</a>, <a data-link-type="biblio" href="#biblio-css3-namespace">[css3-namespace]</a>, <a data-link-type="biblio" href="#biblio-css-writing-modes-3">[css-writing-modes-3]</a>, <a data-link-type="biblio" href="#biblio-css-color-3">[css-color-3]</a>, <a data-link-type="biblio" href="#biblio-css-fonts-3">[css-fonts-3]</a>, <a data-link-type="biblio" href="#biblio-css3-mediaqueries">[css3-mediaqueries]</a>, <a data-link-type="biblio" href="#biblio-css-text-3">[css-text-3]</a>, <a data-link-type="biblio" href="#biblio-css-text-decor-3">[css-text-decor-3]</a>, <a data-link-type="biblio" href="#biblio-css-values-3">[css-values-3]</a>, <a data-link-type="biblio" href="#biblio-css-writing-modes-3">[css-writing-modes-3]</a>, <a data-link-type="biblio" href="#biblio-css-syntax-3">[css-syntax-3]</a>, <a data-link-type="biblio" href="#biblio-css3-conditional">[css3-conditional]</a>, <a data-link-type="biblio" href="#biblio-css-flexbox-1">[css-flexbox-1]</a>, <a data-link-type="biblio" href="#biblio-selectors-3">[selectors-3]</a>, <a data-link-type="biblio" href="#biblio-css-will-change-1">[css-will-change-1]</a>, <a data-link-type="biblio" href="#biblio-css-variables-1">[css-variables-1]</a>, <a data-link-type="biblio" href="#biblio-compositing-1">[compositing-1]</a>, <a data-link-type="biblio" href="#biblio-css2">[CSS2]</a>, <a data-link-type="biblio" href="#biblio-woff">[WOFF]</a>, <a data-link-type="biblio" href="#biblio-svg11">[SVG11]</a>, <a data-link-type="biblio" href="#biblio-png">[PNG]</a>, <a data-link-type="biblio" href="#biblio-ecmascript">[ECMAScript]</a>, <a data-link-type="biblio" href="#biblio-ecma-402">[ECMA-402]</a>, <a data-link-type="biblio" href="#biblio-hr-time-2">[hr-time-2]</a>, <a data-link-type="biblio" href="#biblio-dom-level-3-core">[DOM-Level-3-Core]</a>, <a data-link-type="biblio" href="#biblio-dom-level-3-events">[DOM-Level-3-Events]</a>, <a data-link-type="biblio" href="#biblio-user-timing">[user-timing]</a>, <a data-link-type="biblio" href="#biblio-navigation-timing">[navigation-timing]</a>, <a data-link-type="biblio" href="#biblio-resource-timing-1">[resource-timing-1]</a>, <a data-link-type="biblio" href="#biblio-tracking-dnt">[tracking-dnt]</a>, <a data-link-type="biblio" href="#biblio-geolocation-api">[geolocation-API]</a>, <a data-link-type="biblio" href="#biblio-webcryptoapi">[WebCryptoAPI]</a>, <a data-link-type="biblio" href="#biblio-encrypted-media">[encrypted-media]</a>, <a data-link-type="biblio" href="#biblio-mediacapture-streams">[mediacapture-streams]</a>, <a data-link-type="biblio" href="#biblio-beacon">[beacon]</a>, <a data-link-type="biblio" href="#biblio-indexeddb">[IndexedDB]</a>, <a data-link-type="biblio" href="#biblio-page-visibility-2">[page-visibility-2]</a>, <a data-link-type="biblio" href="#biblio-elementtraversal">[ElementTraversal]</a>, <a data-link-type="biblio" href="#biblio-dom-level-2-style">[DOM-Level-2-Style]</a>, <a data-link-type="biblio" href="#biblio-dom-level-2-traversal-range">[DOM-Level-2-Traversal-Range]</a>, <a data-link-type="biblio" href="#biblio-gamepad">[gamepad]</a>, <a data-link-type="biblio" href="#biblio-csp2">[CSP2]</a>, <a data-link-type="biblio" href="#biblio-cors">[cors]</a>, <a data-link-type="biblio" href="#biblio-upgrade-insecure-requests">[upgrade-insecure-requests]</a>, <a data-link-type="biblio" href="#biblio-referrer-policy">[referrer-policy]</a>, <a data-link-type="biblio" href="#biblio-rfc7034">[rfc7034]</a>, <a data-link-type="biblio" href="#biblio-rfc7932">[rfc7932]</a>, <a data-link-type="biblio" href="#biblio-rfc6797">[rfc6797]</a>, <a data-link-type="biblio" href="#biblio-rfc6066">[rfc6066]</a>, <a data-link-type="biblio" href="#biblio-rfc2397">[rfc2397]</a>, and <a data-link-type="biblio" href="#biblio-rfc8446">[rfc8446]</a> standards.</p>
+   <p>Each web_view class instance represents an independent, asynchronous web-content interface. The provided web_view shall support content complying with the <a data-link-type="biblio" href="#biblio-html5">[HTML5]</a>, <a data-link-type="biblio" href="#biblio-png">[PNG]</a>, and <a data-link-type="biblio" href="#biblio-ecmascript">[ECMAScript]</a> standards.</p>
    <p>[ <em>Note</em>:</p>
-   <p>Implementations are encouraged to support the latest <a href="https://spec.whatwg.org/">WHATWG living standards</a>, <a data-link-type="biblio" href="#biblio-wai-aria">[wai-aria]</a>, <a data-link-type="biblio" href="#biblio-webrtc">[webrtc]</a>, <a data-link-type="biblio" href="#biblio-webvtt1">[webvtt1]</a>, and otherwise maximize compatibility with other implementations (see, e.g., <a href="https://caniuse.com/">Can I use...</a> )</p>
+   <p>Implementations are encouraged to support the latest <a href="https://spec.whatwg.org/">WHATWG living standards</a>, <a data-link-type="biblio" href="#biblio-wai-aria">[wai-aria]</a>, <a data-link-type="biblio" href="#biblio-webgl">[WebGL]</a>, <a data-link-type="biblio" href="#biblio-webrtc">[webrtc]</a>, <a data-link-type="biblio" href="#biblio-webvtt1">[webvtt1]</a>, <a data-link-type="biblio" href="#biblio-svg11">[SVG11]</a>, CSS standards, DOM standards, and otherwise maximize compatibility with other implementations (see, e.g., <a href="https://caniuse.com/">Can I use...</a> )</p>
    <p>-- <em>end note</em> ]</p>
+   <p>All std::u8string objects used with std::web_view must contain well-formed UTF-8 data.</p>
+   <p>The destructor blocks until all URI-scheme handlers have returned. These handlers are allowed to call member functions on a web_view object, even if another thread has concurrently started execution of the destructor.</p>
    <p>web_view member functions [<strong>web_view.members</strong>]</p>
    <blockquote>
-<pre class="highlight"><c- n>web_view</c-><c- p>(</c-><c- k>const</c-> <c- n>std</c-><c- o>::</c-><c- n>string</c-> <c- o>&amp;</c-><c- n>title</c-> <c- o>=</c-> <c- s>""</c-><c- p>);</c-></pre>
+<pre class="highlight"><c- n>web_view</c-><c- p>(</c-><c- k>const</c-> <c- n>std</c-><c- o>::</c-><c- n>u8string</c-> <c- o>&amp;</c-><c- n>title</c-> <c- o>=</c-> <c- s>""</c-><c- p>);</c-><c- n>web_view</c-><c- p>(</c-><c- k>const</c-> <c- n>native_options_type</c-> <c- o>&amp;</c-><c- n>options</c-><c- p>,</c-> <c- k>const</c-> <c- n>std</c-><c- o>::</c-><c- n>u8string</c-> <c- o>&amp;</c-><c- n>title</c-> <c- o>=</c-> <c- s>""</c-><c- p>);</c-></pre>
    </blockquote>
    <p><em>Effects</em>: Constructs an object of the class web_view with the specified title.</p>
    <p>[ <em>Note</em>:</p>
    <p>The title should be used by the implementation to associate a name with the web content’s interface consistent with how that implementation generally displays the name of an interactive application. For example, on implementations that display graphical windows with title bars, the provided title, followed by a ": ", may be prepended to any title provided by the web content itself for the purpose of setting the text displayed in the title bar. The intent is that, from the user’s perspective, the title sets the name of the application associated with the web content’s interface.</p>
    <p>-- <em>end note</em> ]</p>
+   <p>If the implementation defines a native_options_type, then the corresponding overload shall be provided.</p>
    <blockquote>
-<pre class="highlight"><c- n>std</c-><c- o>::</c-><c- n>future</c-><c- o>&lt;</c-><c- n>std</c-><c- o>::</c-><c- n>error_code</c-><c- o>></c-> <c- n>display_from_uri</c-><c- p>(</c-><c- k>const</c-> <c- n>std</c-><c- o>::</c-><c- n>string</c-> <c- o>&amp;</c-><c- n>uri</c-><c- p>);</c-></pre>
+<pre class="highlight"><c- n>std</c-><c- o>::</c-><c- n>future</c-><c- o>&lt;</c-><c- n>std</c-><c- o>::</c-><c- n>error_code</c-><c- o>></c-> <c- n>display_from_uri</c-><c- p>(</c-><c- k>const</c-> <c- n>std</c-><c- o>::</c-><c- n>u8string</c-> <c- o>&amp;</c-><c- n>uri</c-><c- p>);</c-></pre>
    </blockquote>
    <p><em>Effects</em>: Causes the top-level web content to be replaced with content loaded from the provided URI. The implementation shall support the URI format specified in <a data-link-type="biblio" href="#biblio-rfc3986">[rfc3986]</a>.</p>
    <p><em>Returns</em>: A future containing the error code describing the final status of the request. It is implementation defined at what point during the content-loading process the error status is determined. If resources are unavailable to display the requested content, then an error should be set in the returned future. The implementation shall not wait indefinitely for necessary resources to become available before setting the final error status.</p>
@@ -1663,40 +1713,48 @@ directly). An important question is whether this API surface could be small- and
    <p>The implementation should handle this function as a top-level navigation request. All state associated with web content previously displayed should be rendered inaccessible to the content loaded as a result of calling this function. If the previous content caused additional windows to be opened, those windows should be closed.</p>
    <p>-- <em>end note</em> ]</p>
    <blockquote>
-<pre class="highlight"><c- n>std</c-><c- o>::</c-><c- n>future</c-><c- o>&lt;</c-><c- n>std</c-><c- o>::</c-><c- n>string</c-><c- o>></c-> <c- n>run_script</c-><c- p>(</c-><c- k>const</c-> <c- n>std</c-><c- o>::</c-><c- n>string</c-> <c- o>&amp;</c-><c- n>script</c-><c- p>);</c-></pre>
+<pre class="highlight"><c- k>template</c-> <c- o>&lt;</c-><c- k>typename</c-> <c- n>Ret</c-><c- p>,</c-> <c- k>typename</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c-><c- n>std</c-><c- o>::</c-><c- n>future</c-><c- o>&lt;</c-><c- n>Ret</c-><c- o>></c-> <c- n>invoke</c-><c- p>(</c-><c- k>const</c-> <c- n>std</c-><c- o>::</c-><c- n>u8string</c-> <c- o>&amp;</c-><c- n>fun_name</c-><c- p>,</c-> <c- n>Args</c-><c- o>&amp;&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c-></pre>
    </blockquote>
-   <p><em>Effects</em>: The implementation shall execute the provided string as an <a data-link-type="biblio" href="#biblio-ecmascript">[ECMAScript]</a> script in the context of the current web content. The implementation may define limits on the size of the provided script and the execution time of the script.</p>
-   <p><em>Returns</em>: The result of the script shall be converted to a string and set in the returned future.</p>
+   <p><em>Effects</em>: The implementation shall execute the named function in the context of currently-displayed web content. The named function may refer to a <a data-link-type="biblio" href="#biblio-ecmascript">[ECMAScript]</a> script function in the context of the current web content or any other function that might be made available in an implementation-defined manner. The implementation may define limits on the size of the provided arguments and the execution time of the script.</p>
+   <p><em>Returns</em>: The result of the script shall be converted to the type Ret and set in the returned future. If the execution of the requested function, or any of the necessary type conversions are not possible, then the future’s associated shared state will be abandoned.</p>
+   <p>The intent here is that some mapping between JSON entities and types will be specified, and some type-traits and/or reflection capability will be used to enable conversion between user-defined types and JSON entities. JSON serialization libraries are a common use cases for reflection schemes (see, e.g., <a href="http://jrruethe.github.io/blog/2015/05/21/boost-fusion-json-serializer/">Boost Fusion Json Serializer</a>, <a href="https://www.boost.org/doc/libs/1_62_0/libs/hana/doc/html/index.html#tutorial-introspection-json">Boost.Hana JSON example</a>). A similar mapping scheme must be used for the provided arguments.</p>
+   <p>The intent here is to support invoking ECMAScript functions while allowing for future enhancements (e.g., some kind of exported WebAssembly functions).</p>
+   <p>It is expected that, for security reasons, implementations might restrict or disable this interface for web content provided by some remote sources.</p>
    <blockquote>
-<pre class="highlight"><c- k>template</c-> <c- o>&lt;</c-><c- k>typename</c-> <c- n>URISchemeHandler</c-><c- o>></c-><c- b>void</c-> <c- n>set_uri_scheme_handler</c-><c- p>(</c-><c- k>const</c-> <c- n>std</c-><c- o>::</c-><c- n>string</c-> <c- o>&amp;</c-><c- n>scheme</c-><c- p>,</c-> <c- n>URISchemeHandler</c-> <c- n>handler</c-><c- p>);</c-></pre>
+<pre class="highlight"><c- k>template</c-> <c- o>&lt;</c-><c- k>typename</c-> <c- n>URISchemeHandler</c-><c- o>></c-><c- b>void</c-> <c- n>add_uri_scheme_handler</c-><c- p>(</c-><c- k>const</c-> <c- n>std</c-><c- o>::</c-><c- n>u8string</c-> <c- o>&amp;</c-><c- n>scheme</c-><c- p>,</c-> <c- n>URISchemeHandler</c-> <c- n>handler</c-><c- p>);</c-></pre>
    </blockquote>
    <p><em>Effects</em>: Registers the provided callable object to handle the provided URI scheme. When requests are generated to URIs with the provided scheme, the function-call operator of the provided object is invoked. The handler is provided with the full URI requested and a reference to a std::ostream into which the requested data should be stored. If an error is encountered, an appropriate error code should be returned. Methods on the provided handler object may be simultaneously called on threads other than the thread calling this function. Such calls need not be synchronized with each other.</p>
    <blockquote>
-<pre class="highlight"><c- k>template</c-> <c- o>&lt;</c-><c- k>typename</c-> <c- n>CloseHandler</c-><c- o>></c-><c- b>void</c-> <c- n>set_close_handler</c-><c- p>(</c-><c- n>CloseHandler</c-> <c- n>handler</c-><c- p>);</c-></pre>
+<pre class="highlight">    <c- k>template</c-> <c- o>&lt;</c-><c- k>typename</c-> <c- n>Rep</c-><c- p>,</c-> <c- k>typename</c-> <c- n>Period</c-><c- o>></c-><c- b>bool</c-> <c- n>wait_for</c-><c- p>(</c-><c- k>const</c-> <c- n>std</c-><c- o>::</c-><c- n>chrono</c-><c- o>::</c-><c- n>duration</c-><c- o>&lt;</c-><c- n>Rep</c-><c- p>,</c-> <c- n>Period</c-><c- o>>&amp;</c-> <c- n>rel_time</c-><c- p>,</c-> <c- b>bool</c-> <c- n>closed</c-> <c- o>=</c-> true<c- p>);</c->
+<c- k>template</c-> <c- o>&lt;</c-><c- k>typename</c-> <c- n>Rep</c-><c- p>,</c-> <c- k>typename</c-> <c- n>Period</c-><c- o>></c->
+<c- b>bool</c-> <c- n>wait_for</c-><c- p>(</c-><c- k>const</c-> <c- n>std</c-><c- o>::</c-><c- n>chrono</c-><c- o>::</c-><c- n>duration</c-><c- o>&lt;</c-><c- n>Rep</c-><c- p>,</c-> <c- n>Period</c-><c- o>>&amp;</c-> <c- n>rel_time</c-><c- p>,</c-> <c- n>std</c-><c- o>::</c-><c- n>error_code</c-> <c- o>&amp;</c-><c- n>last_errc</c-><c- p>,</c-> <c- b>bool</c-> <c- n>closed</c-> <c- o>=</c-> true<c- p>);</c-></pre>
    </blockquote>
-   <p><em>Effects</em>: Registers the provided callable object which will be called by the implementation when the web content’s interface becomes irrevocably unusable.</p>
-   <p>[<em>Note:</em></p>
-   <p>On implementations where the web content is displayed in a window, this handler should be called when the user, or other system activity, causes the window to be closed.</p>
-   <p>-- <em>end note</em> ]</p>
-   <blockquote>
-<pre class="highlight"><c- k>template</c-> <c- o>&lt;</c-><c- k>typename</c-> <c- n>Rep</c-><c- p>,</c-> <c- k>typename</c-> <c- n>Period</c-><c- o>></c-><c- b>bool</c-> <c- n>wait_for_close</c-><c- p>(</c-><c- k>const</c-> <c- n>std</c-><c- o>::</c-><c- n>chrono</c-><c- o>::</c-><c- n>duration</c-><c- o>&lt;</c-><c- n>Rep</c-><c- p>,</c-> <c- n>Period</c-><c- o>>&amp;</c-> <c- n>rel_time</c-><c- p>);</c-></pre>
-   </blockquote>
-   <p><em>Effects</em>: Waits until the web content’s interface becomes irrevocably unusable or the specified time interval has elapsed.</p>
-   <p><em>Returns</em>: <code class="highlight">true</code> if web content’s interface has become irrevocably unusable.</p>
+   <p><em>Effects</em>: Waits until the web content’s interface becomes irrevocably unusable, or if closed is false, until the top-level web-content loading is complete, or the specified time interval has elapsed. If the return value is true, then last_errc shall be set.</p>
+   <p><em>Returns</em>: <code class="highlight">true</code> if web content’s interface has become irrevocably unusable, or if closed is false, if the top-level web-content loading is complete.</p>
    <p><em>Throws</em>: Timeout-related exceptions (32.2.4).</p>
    <blockquote>
-<pre class="highlight"><c- b>void</c-> <c- nf>wait_for_close</c-><c- p>();</c-></pre>
+<pre class="highlight">    <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>Clock</c-><c- p>,</c-> <c- k>class</c-> <c- nc>Duration</c-><c- o>></c-><c- b>bool</c-> <c- n>wait_until</c-><c- p>(</c-><c- k>const</c-> <c- n>chrono</c-><c- o>::</c-><c- n>time_point</c-><c- o>&lt;</c-><c- n>Clock</c-><c- p>,</c-> <c- n>Duration</c-><c- o>>&amp;</c-> <c- n>abs_time</c-><c- p>,</c-> <c- b>bool</c-> <c- n>closed</c-> <c- o>=</c-> true<c- p>);</c->
+<c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>Clock</c-><c- p>,</c-> <c- k>class</c-> <c- nc>Duration</c-><c- o>></c->
+<c- b>bool</c-> <c- n>wait_until</c-><c- p>(</c-><c- k>const</c-> <c- n>chrono</c-><c- o>::</c-><c- n>time_point</c-><c- o>&lt;</c-><c- n>Clock</c-><c- p>,</c-> <c- n>Duration</c-><c- o>>&amp;</c-> <c- n>abs_time</c-><c- p>,</c-> <c- n>std</c-><c- o>::</c-><c- n>error_code</c-> <c- o>&amp;</c-><c- n>last_errc</c-><c- p>,</c-> <c- b>bool</c-> <c- n>closed</c-> <c- o>=</c-> true<c- p>);</c-> </pre>
    </blockquote>
-   <p><em>Effects</em>: Waits until the web content’s interface becomes irrevocably unusable.</p>
+   <p><em>Effects</em>: Waits until the web content’s interface becomes irrevocably unusable, or if closed is false, until the top-level web-content loading is complete, or the specified time has been reached. If the return value is true, then last_errc shall be set.</p>
+   <p><em>Returns</em>: <code class="highlight">true</code> if web content’s interface has become irrevocably unusable, or if closed is false, if the top-level web-content loading is complete.</p>
    <p><em>Throws</em>: Timeout-related exceptions (32.2.4).</p>
-   <p>Concurrent invocation of wait_for_close is allowed. If a close handler has been registered, and the web content’s interface has become irrevocably unusable, the close handler shall complete execution prior to wait_for_close returning.</p>
    <blockquote>
-<pre class="highlight"><c- b>void</c-> <c- nf>request_close</c-><c- p>();</c-></pre>
+<pre class="highlight"><c- b>void</c-> <c- nf>wait</c-><c- p>(</c-><c- b>bool</c-> <c- n>closed</c-> <c- o>=</c-> true<c- p>);</c-><c- b>void</c-> <c- nf>wait</c-><c- p>(</c-><c- n>std</c-><c- o>::</c-><c- n>error_code</c-> <c- o>&amp;</c-><c- n>last_errc</c-><c- p>,</c-> <c- b>bool</c-> <c- n>closed</c-> <c- o>=</c-> true<c- p>);</c-></pre>
+   </blockquote>
+   <p><em>Effects</em>: Waits until the web content’s interface becomes irrevocably unusable, or if closed is false, until the top-level web-content loading is complete.</p>
+   <p><em>Throws</em>: Timeout-related exceptions (32.2.4).</p>
+   <p>Concurrent invocation of wait is allowed.</p>
+   <blockquote>
+<pre class="highlight"><c- b>void</c-> <c- nf>close</c-><c- p>();</c-></pre>
    </blockquote>
    <p><em>Effects</em>: Requests, asynchronously, that the web content’s interface become irrevocably unusable.</p>
-   <h2 class="heading settled" data-level="6" id="ack"><span class="secno">6. </span><span class="content">Acknowledgments</span><a class="self-link" href="#ack"></a></h2>
+   <h2 class="heading settled" data-level="8" id="ack"><span class="secno">8. </span><span class="content">Acknowledgments</span><a class="self-link" href="#ack"></a></h2>
    <p>I’d like to thank JF Bastien, Botond Ballo, Jeffrey Yasskin, Mike Spertus, Bryce Lelbach, Vinnie Falco, and Chandler Carruth for feedback and suggestions.</p>
    <p>Some public discussion is available on <a href="https://www.reddit.com/r/cpp/comments/900dor/stdweb_view_proposal/">reddit</a>. Also, see this thread on <a href="https://groups.google.com/forum/#!topic/mozilla.dev.platform/HGjLpdUaLsI">Gecko’s list</a>.</p>
+   <p>The telecon SG16 review: <a href="https://github.com/sg16-unicode/sg16-meetings#august-21st-2019">Notes</a></p>
+   <p>The Argonne Leadership Computing Facility is a DOE Office of Science User Facility supported under Contract DE-AC02-06CH11357.</p>
   </main>
 <script>
 (function() {
@@ -1830,134 +1888,30 @@ directly). An important question is whether this API surface could be small- and
   <h2 class="no-num no-ref heading settled" id="references"><span class="content">References</span><a class="self-link" href="#references"></a></h2>
   <h3 class="no-num no-ref heading settled" id="informative"><span class="content">Informative References</span><a class="self-link" href="#informative"></a></h3>
   <dl>
-   <dt id="biblio-2dcontext">[2DCONTEXT]
-   <dd>Rik Cabanier; et al. <a href="https://www.w3.org/TR/2dcontext/">HTML Canvas 2D Context</a>. 19 November 2015. REC. URL: <a href="https://www.w3.org/TR/2dcontext/">https://www.w3.org/TR/2dcontext/</a>
-   <dt id="biblio-beacon">[BEACON]
-   <dd>Ilya Grigorik; et al. <a href="https://www.w3.org/TR/beacon/">Beacon</a>. 13 April 2017. CR. URL: <a href="https://www.w3.org/TR/beacon/">https://www.w3.org/TR/beacon/</a>
-   <dt id="biblio-compositing-1">[COMPOSITING-1]
-   <dd>Rik Cabanier; Nikos Andronikos. <a href="https://www.w3.org/TR/compositing-1/">Compositing and Blending Level 1</a>. 13 January 2015. CR. URL: <a href="https://www.w3.org/TR/compositing-1/">https://www.w3.org/TR/compositing-1/</a>
-   <dt id="biblio-cors">[CORS]
-   <dd>Anne van Kesteren. <a href="https://www.w3.org/TR/cors/">Cross-Origin Resource Sharing</a>. 16 January 2014. REC. URL: <a href="https://www.w3.org/TR/cors/">https://www.w3.org/TR/cors/</a>
-   <dt id="biblio-csp2">[CSP2]
-   <dd>Mike West; Adam Barth; Daniel Veditz. <a href="https://www.w3.org/TR/CSP2/">Content Security Policy Level 2</a>. 15 December 2016. REC. URL: <a href="https://www.w3.org/TR/CSP2/">https://www.w3.org/TR/CSP2/</a>
-   <dt id="biblio-css-cascade-3">[CSS-CASCADE-3]
-   <dd>Elika Etemad; Tab Atkins Jr.. <a href="https://www.w3.org/TR/css-cascade-3/">CSS Cascading and Inheritance Level 3</a>. 28 August 2018. CR. URL: <a href="https://www.w3.org/TR/css-cascade-3/">https://www.w3.org/TR/css-cascade-3/</a>
-   <dt id="biblio-css-color-3">[CSS-COLOR-3]
-   <dd>Tantek Çelik; Chris Lilley; David Baron. <a href="https://www.w3.org/TR/css-color-3/">CSS Color Module Level 3</a>. 19 June 2018. REC. URL: <a href="https://www.w3.org/TR/css-color-3/">https://www.w3.org/TR/css-color-3/</a>
-   <dt id="biblio-css-flexbox-1">[CSS-FLEXBOX-1]
-   <dd>Tab Atkins Jr.; et al. <a href="https://www.w3.org/TR/css-flexbox-1/">CSS Flexible Box Layout Module Level 1</a>. 19 November 2018. CR. URL: <a href="https://www.w3.org/TR/css-flexbox-1/">https://www.w3.org/TR/css-flexbox-1/</a>
-   <dt id="biblio-css-fonts-3">[CSS-FONTS-3]
-   <dd>John Daggett; Myles Maxfield; Chris Lilley. <a href="https://www.w3.org/TR/css-fonts-3/">CSS Fonts Module Level 3</a>. 20 September 2018. REC. URL: <a href="https://www.w3.org/TR/css-fonts-3/">https://www.w3.org/TR/css-fonts-3/</a>
-   <dt id="biblio-css-grid-1">[CSS-GRID-1]
-   <dd>Tab Atkins Jr.; Elika Etemad; Rossen Atanassov. <a href="https://www.w3.org/TR/css-grid-1/">CSS Grid Layout Module Level 1</a>. 14 December 2017. CR. URL: <a href="https://www.w3.org/TR/css-grid-1/">https://www.w3.org/TR/css-grid-1/</a>
-   <dt id="biblio-css-scroll-snap-1">[CSS-SCROLL-SNAP-1]
-   <dd>Matt Rakow; et al. <a href="https://www.w3.org/TR/css-scroll-snap-1/">CSS Scroll Snap Module Level 1</a>. 31 January 2019. CR. URL: <a href="https://www.w3.org/TR/css-scroll-snap-1/">https://www.w3.org/TR/css-scroll-snap-1/</a>
-   <dt id="biblio-css-syntax-3">[CSS-SYNTAX-3]
-   <dd>Tab Atkins Jr.; Simon Sapin. <a href="https://www.w3.org/TR/css-syntax-3/">CSS Syntax Module Level 3</a>. 20 February 2014. CR. URL: <a href="https://www.w3.org/TR/css-syntax-3/">https://www.w3.org/TR/css-syntax-3/</a>
-   <dt id="biblio-css-text-3">[CSS-TEXT-3]
-   <dd>Elika Etemad; Koji Ishii; Florian Rivoal. <a href="https://www.w3.org/TR/css-text-3/">CSS Text Module Level 3</a>. 12 December 2018. WD. URL: <a href="https://www.w3.org/TR/css-text-3/">https://www.w3.org/TR/css-text-3/</a>
-   <dt id="biblio-css-text-decor-3">[CSS-TEXT-DECOR-3]
-   <dd>Elika Etemad; Koji Ishii. <a href="https://www.w3.org/TR/css-text-decor-3/">CSS Text Decoration Module Level 3</a>. 3 July 2018. CR. URL: <a href="https://www.w3.org/TR/css-text-decor-3/">https://www.w3.org/TR/css-text-decor-3/</a>
-   <dt id="biblio-css-values-3">[CSS-VALUES-3]
-   <dd>Tab Atkins Jr.; Elika Etemad. <a href="https://www.w3.org/TR/css-values-3/">CSS Values and Units Module Level 3</a>. 31 January 2019. CR. URL: <a href="https://www.w3.org/TR/css-values-3/">https://www.w3.org/TR/css-values-3/</a>
-   <dt id="biblio-css-variables-1">[CSS-VARIABLES-1]
-   <dd>Tab Atkins Jr.. <a href="https://www.w3.org/TR/css-variables-1/">CSS Custom Properties for Cascading Variables Module Level 1</a>. 3 December 2015. CR. URL: <a href="https://www.w3.org/TR/css-variables-1/">https://www.w3.org/TR/css-variables-1/</a>
-   <dt id="biblio-css-will-change-1">[CSS-WILL-CHANGE-1]
-   <dd>Tab Atkins Jr.. <a href="https://www.w3.org/TR/css-will-change-1/">CSS Will Change Module Level 1</a>. 3 December 2015. CR. URL: <a href="https://www.w3.org/TR/css-will-change-1/">https://www.w3.org/TR/css-will-change-1/</a>
-   <dt id="biblio-css-writing-modes-3">[CSS-WRITING-MODES-3]
-   <dd>Elika Etemad; Koji Ishii. <a href="https://www.w3.org/TR/css-writing-modes-3/">CSS Writing Modes Level 3</a>. 24 May 2018. CR. URL: <a href="https://www.w3.org/TR/css-writing-modes-3/">https://www.w3.org/TR/css-writing-modes-3/</a>
-   <dt id="biblio-css2">[CSS2]
-   <dd>Bert Bos; et al. <a href="https://www.w3.org/TR/CSS2/">Cascading Style Sheets Level 2 Revision 1 (CSS 2.1) Specification</a>. 7 June 2011. REC. URL: <a href="https://www.w3.org/TR/CSS2/">https://www.w3.org/TR/CSS2/</a>
-   <dt id="biblio-css3-background">[CSS3-BACKGROUND]
-   <dd>Bert Bos; Elika Etemad; Brad Kemper. <a href="https://www.w3.org/TR/css-backgrounds-3/">CSS Backgrounds and Borders Module Level 3</a>. 17 October 2017. CR. URL: <a href="https://www.w3.org/TR/css-backgrounds-3/">https://www.w3.org/TR/css-backgrounds-3/</a>
-   <dt id="biblio-css3-conditional">[CSS3-CONDITIONAL]
-   <dd>David Baron. <a href="https://www.w3.org/TR/css3-conditional/">CSS Conditional Rules Module Level 3</a>. 4 April 2013. CR. URL: <a href="https://www.w3.org/TR/css3-conditional/">https://www.w3.org/TR/css3-conditional/</a>
-   <dt id="biblio-css3-images">[CSS3-IMAGES]
-   <dd>Elika Etemad; Tab Atkins Jr.. <a href="https://www.w3.org/TR/css3-images/">CSS Image Values and Replaced Content Module Level 3</a>. 17 April 2012. CR. URL: <a href="https://www.w3.org/TR/css3-images/">https://www.w3.org/TR/css3-images/</a>
-   <dt id="biblio-css3-mediaqueries">[CSS3-MEDIAQUERIES]
-   <dd>Florian Rivoal; et al. <a href="https://www.w3.org/TR/css3-mediaqueries/">Media Queries</a>. 19 June 2012. REC. URL: <a href="https://www.w3.org/TR/css3-mediaqueries/">https://www.w3.org/TR/css3-mediaqueries/</a>
-   <dt id="biblio-css3-namespace">[CSS3-NAMESPACE]
-   <dd>Elika Etemad. <a href="https://www.w3.org/TR/css-namespaces-3/">CSS Namespaces Module Level 3</a>. 20 March 2014. REC. URL: <a href="https://www.w3.org/TR/css-namespaces-3/">https://www.w3.org/TR/css-namespaces-3/</a>
-   <dt id="biblio-css3-ui">[CSS3-UI]
-   <dd>Tantek Çelik; Florian Rivoal. <a href="https://www.w3.org/TR/css-ui-3/">CSS Basic User Interface Module Level 3 (CSS3 UI)</a>. 21 June 2018. REC. URL: <a href="https://www.w3.org/TR/css-ui-3/">https://www.w3.org/TR/css-ui-3/</a>
-   <dt id="biblio-dom-level-2-style">[DOM-Level-2-Style]
-   <dd>Chris Wilson; Philippe Le Hégaret. <a href="https://www.w3.org/TR/DOM-Level-2-Style/">Document Object Model (DOM) Level 2 Style Specification</a>. 13 November 2000. REC. URL: <a href="https://www.w3.org/TR/DOM-Level-2-Style/">https://www.w3.org/TR/DOM-Level-2-Style/</a>
-   <dt id="biblio-dom-level-2-traversal-range">[DOM-Level-2-Traversal-Range]
-   <dd>Joseph Kesselman; et al. <a href="https://www.w3.org/TR/DOM-Level-2-Traversal-Range/">Document Object Model (DOM) Level 2 Traversal and Range Specification</a>. 13 November 2000. REC. URL: <a href="https://www.w3.org/TR/DOM-Level-2-Traversal-Range/">https://www.w3.org/TR/DOM-Level-2-Traversal-Range/</a>
-   <dt id="biblio-dom-level-3-core">[DOM-Level-3-Core]
-   <dd>Arnaud Le Hors; et al. <a href="https://www.w3.org/TR/DOM-Level-3-Core/">Document Object Model (DOM) Level 3 Core Specification</a>. 7 April 2004. REC. URL: <a href="https://www.w3.org/TR/DOM-Level-3-Core/">https://www.w3.org/TR/DOM-Level-3-Core/</a>
-   <dt id="biblio-dom-level-3-events">[DOM-Level-3-Events]
-   <dd>Gary Kacmarcik; Travis Leithead; Doug Schepers. <a href="https://www.w3.org/TR/uievents/">UI Events</a>. 8 November 2018. WD. URL: <a href="https://www.w3.org/TR/uievents/">https://www.w3.org/TR/uievents/</a>
-   <dt id="biblio-ecma-402">[ECMA-402]
-   <dd><a href="https://tc39.github.io/ecma402/">ECMAScript Internationalization API Specification</a>. URL: <a href="https://tc39.github.io/ecma402/">https://tc39.github.io/ecma402/</a>
    <dt id="biblio-ecmascript">[ECMAScript]
    <dd><a href="https://tc39.github.io/ecma262/">ECMAScript Language Specification</a>. URL: <a href="https://tc39.github.io/ecma262/">https://tc39.github.io/ecma262/</a>
-   <dt id="biblio-elementtraversal">[ElementTraversal]
-   <dd>Doug Schepers; Robin Berjon. <a href="https://www.w3.org/TR/ElementTraversal/">Element Traversal Specification</a>. 22 December 2008. REC. URL: <a href="https://www.w3.org/TR/ElementTraversal/">https://www.w3.org/TR/ElementTraversal/</a>
-   <dt id="biblio-encrypted-media">[ENCRYPTED-MEDIA]
-   <dd>David Dorwin; et al. <a href="https://www.w3.org/TR/encrypted-media/">Encrypted Media Extensions</a>. 18 September 2017. REC. URL: <a href="https://www.w3.org/TR/encrypted-media/">https://www.w3.org/TR/encrypted-media/</a>
-   <dt id="biblio-gamepad">[GAMEPAD]
-   <dd>Scott Graham; Theodore Mielczarek; Brandon Jones. <a href="https://www.w3.org/TR/gamepad/">Gamepad</a>. 14 December 2018. WD. URL: <a href="https://www.w3.org/TR/gamepad/">https://www.w3.org/TR/gamepad/</a>
-   <dt id="biblio-geolocation-api">[geolocation-API]
-   <dd>Andrei Popescu. <a href="https://www.w3.org/TR/geolocation-API/">Geolocation API Specification 2nd Edition</a>. 8 November 2016. REC. URL: <a href="https://www.w3.org/TR/geolocation-API/">https://www.w3.org/TR/geolocation-API/</a>
-   <dt id="biblio-hr-time-2">[HR-TIME-2]
-   <dd>Ilya Grigorik; James Simonsen; Jatinder Mann. <a href="https://www.w3.org/TR/hr-time-2/">High Resolution Time Level 2</a>. 1 March 2018. CR. URL: <a href="https://www.w3.org/TR/hr-time-2/">https://www.w3.org/TR/hr-time-2/</a>
    <dt id="biblio-html5">[HTML5]
    <dd>Ian Hickson; et al. <a href="https://www.w3.org/TR/html5/">HTML5</a>. 27 March 2018. REC. URL: <a href="https://www.w3.org/TR/html5/">https://www.w3.org/TR/html5/</a>
-   <dt id="biblio-indexeddb">[IndexedDB]
-   <dd>Nikunj Mehta; et al. <a href="https://www.w3.org/TR/IndexedDB/">Indexed Database API</a>. 8 January 2015. REC. URL: <a href="https://www.w3.org/TR/IndexedDB/">https://www.w3.org/TR/IndexedDB/</a>
-   <dt id="biblio-mediacapture-streams">[MEDIACAPTURE-STREAMS]
-   <dd>Daniel Burnett; et al. <a href="https://www.w3.org/TR/mediacapture-streams/">Media Capture and Streams</a>. 3 October 2017. CR. URL: <a href="https://www.w3.org/TR/mediacapture-streams/">https://www.w3.org/TR/mediacapture-streams/</a>
-   <dt id="biblio-navigation-timing">[NAVIGATION-TIMING]
-   <dd>Zhiheng Wang. <a href="https://www.w3.org/TR/navigation-timing/">Navigation Timing</a>. 17 December 2012. REC. URL: <a href="https://www.w3.org/TR/navigation-timing/">https://www.w3.org/TR/navigation-timing/</a>
    <dt id="biblio-p0267r7">[P0267R7]
    <dd>Michael B. McLaughlin, Herb Sutter, Jason Zink, Guy Davidson. <a href="https://wg21.link/p0267r7">A Proposal to Add 2D Graphics Rendering and Display to C++</a>. 10 February 2018. URL: <a href="https://wg21.link/p0267r7">https://wg21.link/p0267r7</a>
    <dt id="biblio-p0939r0">[P0939R0]
    <dd>B. Dawes, H. Hinnant, B. Stroustrup, D. Vandevoorde, M. Wong. <a href="https://wg21.link/p0939r0">Direction for ISO C++</a>. 10 February 2018. URL: <a href="https://wg21.link/p0939r0">https://wg21.link/p0939r0</a>
    <dt id="biblio-p1062r0">[P1062R0]
    <dd>Bryce Adelstein Lelbach, Olivier Giroux, Zach Laine, Corentin Jabot, Vittorio Romeo. <a href="https://wg21.link/p1062r0">Diet Graphics</a>. 7 May 2018. URL: <a href="https://wg21.link/p1062r0">https://wg21.link/p1062r0</a>
-   <dt id="biblio-page-visibility-2">[PAGE-VISIBILITY-2]
-   <dd>Ilya Grigorik; Arvind Jain; Jatinder Mann. <a href="https://www.w3.org/TR/page-visibility-2/">Page Visibility Level 2</a>. 17 October 2017. PR. URL: <a href="https://www.w3.org/TR/page-visibility-2/">https://www.w3.org/TR/page-visibility-2/</a>
    <dt id="biblio-png">[PNG]
    <dd>Tom Lane. <a href="https://www.w3.org/TR/PNG/">Portable Network Graphics (PNG) Specification (Second Edition)</a>. 10 November 2003. REC. URL: <a href="https://www.w3.org/TR/PNG/">https://www.w3.org/TR/PNG/</a>
-   <dt id="biblio-referrer-policy">[REFERRER-POLICY]
-   <dd>Jochen Eisinger; Emily Stark. <a href="https://www.w3.org/TR/referrer-policy/">Referrer Policy</a>. 26 January 2017. CR. URL: <a href="https://www.w3.org/TR/referrer-policy/">https://www.w3.org/TR/referrer-policy/</a>
-   <dt id="biblio-resource-timing-1">[RESOURCE-TIMING-1]
-   <dd>Arvind Jain; et al. <a href="https://www.w3.org/TR/resource-timing-1/">Resource Timing Level 1</a>. 30 March 2017. CR. URL: <a href="https://www.w3.org/TR/resource-timing-1/">https://www.w3.org/TR/resource-timing-1/</a>
-   <dt id="biblio-rfc2397">[RFC2397]
-   <dd>L. Masinter. <a href="https://tools.ietf.org/html/rfc2397">The "data" URL scheme</a>. August 1998. Proposed Standard. URL: <a href="https://tools.ietf.org/html/rfc2397">https://tools.ietf.org/html/rfc2397</a>
    <dt id="biblio-rfc3986">[RFC3986]
    <dd>T. Berners-Lee; R. Fielding; L. Masinter. <a href="https://tools.ietf.org/html/rfc3986">Uniform Resource Identifier (URI): Generic Syntax</a>. January 2005. Internet Standard. URL: <a href="https://tools.ietf.org/html/rfc3986">https://tools.ietf.org/html/rfc3986</a>
-   <dt id="biblio-rfc6066">[RFC6066]
-   <dd>D. Eastlake 3rd. <a href="https://tools.ietf.org/html/rfc6066">Transport Layer Security (TLS) Extensions: Extension Definitions</a>. January 2011. Proposed Standard. URL: <a href="https://tools.ietf.org/html/rfc6066">https://tools.ietf.org/html/rfc6066</a>
-   <dt id="biblio-rfc6797">[RFC6797]
-   <dd>J. Hodges; C. Jackson; A. Barth. <a href="https://tools.ietf.org/html/rfc6797">HTTP Strict Transport Security (HSTS)</a>. November 2012. Proposed Standard. URL: <a href="https://tools.ietf.org/html/rfc6797">https://tools.ietf.org/html/rfc6797</a>
-   <dt id="biblio-rfc7034">[RFC7034]
-   <dd>D. Ross; T. Gondrom. <a href="https://tools.ietf.org/html/rfc7034">HTTP Header Field X-Frame-Options</a>. October 2013. Informational. URL: <a href="https://tools.ietf.org/html/rfc7034">https://tools.ietf.org/html/rfc7034</a>
-   <dt id="biblio-rfc7932">[RFC7932]
-   <dd>J. Alakuijala; Z. Szabadka. <a href="https://tools.ietf.org/html/rfc7932">Brotli Compressed Data Format</a>. July 2016. Informational. URL: <a href="https://tools.ietf.org/html/rfc7932">https://tools.ietf.org/html/rfc7932</a>
-   <dt id="biblio-rfc8446">[RFC8446]
-   <dd>E. Rescorla. <a href="https://tools.ietf.org/html/rfc8446">The Transport Layer Security (TLS) Protocol Version 1.3</a>. August 2018. Proposed Standard. URL: <a href="https://tools.ietf.org/html/rfc8446">https://tools.ietf.org/html/rfc8446</a>
-   <dt id="biblio-selectors-3">[SELECTORS-3]
-   <dd>Tantek Çelik; et al. <a href="https://www.w3.org/TR/selectors-3/">Selectors Level 3</a>. 6 November 2018. REC. URL: <a href="https://www.w3.org/TR/selectors-3/">https://www.w3.org/TR/selectors-3/</a>
+   <dt id="biblio-rfc6455">[RFC6455]
+   <dd>I. Fette; A. Melnikov. <a href="https://tools.ietf.org/html/rfc6455">The WebSocket Protocol</a>. December 2011. Proposed Standard. URL: <a href="https://tools.ietf.org/html/rfc6455">https://tools.ietf.org/html/rfc6455</a>
    <dt id="biblio-svg11">[SVG11]
    <dd>Erik Dahlström; et al. <a href="https://www.w3.org/TR/SVG11/">Scalable Vector Graphics (SVG) 1.1 (Second Edition)</a>. 16 August 2011. REC. URL: <a href="https://www.w3.org/TR/SVG11/">https://www.w3.org/TR/SVG11/</a>
-   <dt id="biblio-tracking-dnt">[TRACKING-DNT]
-   <dd>Roy Fielding; David Singer. <a href="https://www.w3.org/TR/tracking-dnt/">Tracking Preference Expression (DNT)</a>. 17 January 2019. NOTE. URL: <a href="https://www.w3.org/TR/tracking-dnt/">https://www.w3.org/TR/tracking-dnt/</a>
-   <dt id="biblio-upgrade-insecure-requests">[UPGRADE-INSECURE-REQUESTS]
-   <dd>Mike West. <a href="https://www.w3.org/TR/upgrade-insecure-requests/">Upgrade Insecure Requests</a>. 8 October 2015. CR. URL: <a href="https://www.w3.org/TR/upgrade-insecure-requests/">https://www.w3.org/TR/upgrade-insecure-requests/</a>
-   <dt id="biblio-user-timing">[USER-TIMING]
-   <dd>Jatinder Mann; Zhiheng Wang; Anderson Quach. <a href="https://www.w3.org/TR/user-timing-1/">User Timing</a>. 26 February 2019. REC. URL: <a href="https://www.w3.org/TR/user-timing-1/">https://www.w3.org/TR/user-timing-1/</a>
    <dt id="biblio-wai-aria">[WAI-ARIA]
    <dd>James Craig; Michael Cooper; et al. <a href="https://www.w3.org/TR/wai-aria/">Accessible Rich Internet Applications (WAI-ARIA) 1.0</a>. 20 March 2014. REC. URL: <a href="https://www.w3.org/TR/wai-aria/">https://www.w3.org/TR/wai-aria/</a>
-   <dt id="biblio-webcryptoapi">[WebCryptoAPI]
-   <dd>Mark Watson. <a href="https://www.w3.org/TR/WebCryptoAPI/">Web Cryptography API</a>. 26 January 2017. REC. URL: <a href="https://www.w3.org/TR/WebCryptoAPI/">https://www.w3.org/TR/WebCryptoAPI/</a>
    <dt id="biblio-webgl">[WebGL]
    <dd>Dean Jackson; Jeff Gilbert. <a href="https://www.khronos.org/registry/webgl/specs/latest/2.0/">WebGL 2.0 Specification</a>. 12 August 2017. URL: <a href="https://www.khronos.org/registry/webgl/specs/latest/2.0/">https://www.khronos.org/registry/webgl/specs/latest/2.0/</a>
    <dt id="biblio-webrtc">[WEBRTC]
    <dd>Adam Bergkvist; et al. <a href="https://www.w3.org/TR/webrtc/">WebRTC 1.0: Real-time Communication Between Browsers</a>. 27 September 2018. CR. URL: <a href="https://www.w3.org/TR/webrtc/">https://www.w3.org/TR/webrtc/</a>
    <dt id="biblio-webvtt1">[WEBVTT1]
    <dd>Silvia Pfeiffer. <a href="https://www.w3.org/TR/webvtt1/">WebVTT: The Web Video Text Tracks Format</a>. 10 May 2018. CR. URL: <a href="https://www.w3.org/TR/webvtt1/">https://www.w3.org/TR/webvtt1/</a>
-   <dt id="biblio-woff">[WOFF]
-   <dd>Jonathan Kew; Tal Leming; Erik van Blokland. <a href="https://www.w3.org/TR/WOFF/">WOFF File Format 1.0</a>. 13 December 2012. REC. URL: <a href="https://www.w3.org/TR/WOFF/">https://www.w3.org/TR/WOFF/</a>
   </dl>
